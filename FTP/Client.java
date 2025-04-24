@@ -3,7 +3,7 @@ import java.net.*;
 import java.util.Scanner;
 
 public class Client {
-    private static final String SERVER_ADDRESS = "192.168.105.193";
+    private static final String SERVER_ADDRESS = "localhost";
     private static final int SERVER_PORT = 6000;
     private static final String DOWNLOAD_DIRECTORY = "downloads";
 
@@ -32,34 +32,53 @@ public class Client {
             boolean connected = true;
             
             while (connected) {
-                // Display available files from server
-                String line;
-                while (!(line = textInput.readLine()).contains("Enter the file name")) {
-                    System.out.println(line);
-                }
-                System.out.println(line); // Print the prompt message
+                // Read server prompt for list or filename
+                String prompt = textInput.readLine();
+                System.out.println(prompt);
                 
-                // Get file name from user
+                // Get user input
                 System.out.print("> ");
-                String fileName = scanner.nextLine();
+                String userInput = scanner.nextLine();
                 
-                // Check if user wants to exit
-                if (fileName.equalsIgnoreCase("exit")) {
-                    connected = false;
-                }
-                
-                // Send file name to server
-                textOutput.write(fileName + "\n");
+                // Send user input to server
+                textOutput.write(userInput + "\n");
                 textOutput.flush();
                 
-                // If exiting, break the loop after sending the exit command
-                if (!connected) {
+                // If user wants to exit
+                if (userInput.equalsIgnoreCase("/exit")) {
                     String goodbyeMsg = textInput.readLine(); // Read goodbye message
                     System.out.println(goodbyeMsg);
-                    break;
+                    connected = false;
+                    continue;
                 }
                 
-                // Read server response
+                // If user requested file list
+                if (userInput.equalsIgnoreCase("/list")) {
+                    // Read and display the file list
+                    String line;
+                    while (!(line = textInput.readLine()).contains("Enter the file name")) {
+                        System.out.println(line);
+                    }
+                    System.out.println(line); // Print prompt for file name
+                    
+                    // Get file name from user
+                    System.out.print("> ");
+                    userInput = scanner.nextLine();
+                    
+                    // Send file name to server
+                    textOutput.write(userInput + "\n");
+                    textOutput.flush();
+                    
+                    // Check if user wants to exit
+                    if (userInput.equalsIgnoreCase("/exit")) {
+                        String goodbyeMsg = textInput.readLine(); // Read goodbye message
+                        System.out.println(goodbyeMsg);
+                        connected = false;
+                        continue;
+                    }
+                }
+                
+                // Read server response for file request
                 String response = textInput.readLine();
                 
                 if ("FILE_FOUND".equals(response)) {
@@ -70,7 +89,7 @@ public class Client {
                     System.out.println("File size: " + fileSize + " bytes");
                     
                     // Create file to save the downloaded content
-                    File downloadedFile = new File(DOWNLOAD_DIRECTORY + File.separator + fileName);
+                    File downloadedFile = new File(DOWNLOAD_DIRECTORY + File.separator + userInput);
                     
                     // Download file
                     try (FileOutputStream fileOutputStream = new FileOutputStream(downloadedFile)) {
@@ -102,7 +121,6 @@ public class Client {
                     // Send acknowledgment to server
                     textOutput.write("\n");
                     textOutput.flush();
-
                     
                 } else if ("FILE_NOT_FOUND".equals(response)) {
                     System.out.println("File not found on server.");
@@ -118,4 +136,3 @@ public class Client {
         }
     }
 }
-
