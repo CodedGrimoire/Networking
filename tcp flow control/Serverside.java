@@ -3,153 +3,174 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-class ServerSide {
+public class ServerSide {
     private static final int port = 8888;
-    private static final int WINDOW_SIZE = 10; // advertised in bytes
-    private static final double PACKET_LOSS_PROBABILITY = 0.2;
-
+    private static final int WINDOW_SIZE = 10; // Server's receive window size
+    private static final double PACKET_LOSS_PROBABILITY = 0.2; // 20% probability of packet loss
+    
     public static void main(String[] args) {
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
+        try {
+            ServerSocket serverSocket = new ServerSocket(port);
             System.out.println("Server started on port " + port);
             System.out.println("Receive window size: " + WINDOW_SIZE + " bytes");
             System.out.println("Packet loss probability: " + (PACKET_LOSS_PROBABILITY * 100) + "%");
-
+            
             while (true) {
-                Socket clientSocket = serverSocket.accept();
-                System.out.println("\nNew client connected: " + clientSocket.getInetAddress().getHostAddress());
-
-                new Thread(new ClientHandler(clientSocket)).start();
+                try {
+                    Socket clientSocket = serverSocket.accept();
+                    System.out.println("New client connected: " + clientSocket.getInetAddress().getHostAddress());
+                    
+                    clientSocket.setReceiveBufferSize(WINDOW_SIZE);
+                    
+                    ClientHandler clientHandler = new ClientHandler(clientSocket);
+                    clientHandler.start();
+                } catch (Exception e) {
+                    System.out.println("Error accepting client connection: " + e.getMessage());
+                }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println("Server error: " + e.getMessage());
         }
     }
-
-    private static class ClientHandler implements Runnable {
-        private Socket socket;
+    
+    private static class ClientHandler extends Thread {
+        private Socket clientSocket;
         private DataInputStream input;
         private DataOutputStream output;
-        private int expectedByte = 0;
-        private int highestInOrderByte = -1;
-        private final Map<Integer, byte[]> bufferedPackets = new TreeMap<>();
-
+        private int expectedSeq = 0;
+        private int highestInOrderSeq = -1; // For cumulative ACK
+        private Map<Integer, byte[]> bufferedPackets = new HashMap<>(); // Buffer out-of-order packets
+        
         public ClientHandler(Socket socket) {
-            this.socket = socket;
+            this.clientSocket = socket;
         }
-
+        
         @Override
         public void run() {
             try {
-                input = new DataInputStream(socket.getInputStream());
-                output = new DataOutputStream(socket.getOutputStream());
-
+                input = new DataInputStream(clientSocket.getInputStream());
+                output = new DataOutputStream(clientSocket.getOutputStream());
+                
                 String fileName = input.readUTF();
-                System.out.println("Receiving file: " + fileName);
-
-                output.writeInt(WINDOW_SIZE); // advertise window size
+                System.out.println("Client sending file: " + fileName);
+                
+                output.writeInt(WINDOW_SIZE);
                 output.flush();
-
+                System.out.println("Sent window size: " + WINDOW_SIZE + " bytes to client");
+                
                 receiveFile(fileName);
-
-            } catch (IOException e) {
-                System.out.println("Client handler error: " + e.getMessage());
+                
+            } catch (Exception e) {
+                System.out.println("Error in client handler: " + e.getMessage());
             } finally {
                 try {
                     if (input != null) input.close();
                     if (output != null) output.close();
-                    if (socket != null) socket.close();
-                    System.out.println("Client disconnected.\n");
+                    if (clientSocket != null) clientSocket.close();
+                    System.out.println("Client disconnected");
                 } catch (IOException e) {
                     System.out.println("Error closing connection: " + e.getMessage());
                 }
             }
         }
-
-        private void receiveFile(String originalFileName) throws IOException {
-            File file = new File(resolveUniqueFilename(originalFileName));
-            try (FileOutputStream fos = new FileOutputStream(file)) {
-                long totalReceived = 0;
-
-                while (true) {
-                    int seq = input.readInt(); // byte offset
-
-                    if (seq == -1) {
-                        System.out.println("End of transmission received.");
-                        sendAck(-1);
-                        break;
-                    }
-
-                    int length = input.readInt();
-                    byte[] data = new byte[length];
-                    input.readFully(data);
-
-                    boolean packetLost = ThreadLocalRandom.current().nextDouble() < PACKET_LOSS_PROBABILITY;
-
-                    if (packetLost) {
-                        System.out.println("Simulated packet loss for seq: " + seq);
-                        continue;
-                    }
-
-                    System.out.println("Received packet [seq=" + seq + ", len=" + length + "]");
-
-                    if (seq == expectedByte) {
-                        fos.write(data);
-                        totalReceived += length;
-                        highestInOrderByte = seq + length;
-                        expectedByte = highestInOrderByte;
-
-                        // Process any buffered in-order packets
-                        while (bufferedPackets.containsKey(expectedByte)) {
-                            byte[] buffered = bufferedPackets.remove(expectedByte);
-                            fos.write(buffered);
-                            totalReceived += buffered.length;
-                            highestInOrderByte = expectedByte + buffered.length;
-                            expectedByte = highestInOrderByte;
-                        }
-
-                        sendAck(expectedByte);
-                        System.out.println("Sent ACK: " + expectedByte);
-
-                    } else if (seq > expectedByte) {
-                        // Out-of-order: buffer it
-                        bufferedPackets.put(seq, data);
-                        sendAck(expectedByte); // duplicate ACK for last good byte
-                        System.out.println("Out-of-order packet. Sent duplicate ACK: " + expectedByte);
-
-                    } else {
-                        // Duplicate or already received
-                        sendAck(expectedByte);
-                        System.out.println("Duplicate packet. Sent ACK: " + expectedByte);
-                    }
-                }
-
-                System.out.println("File received: " + file.getName());
-                System.out.println("Total bytes received: " + totalReceived);
-            }
-        }
-
-        private void sendAck(int ackByte) throws IOException {
-            output.writeInt(ackByte);
-            output.flush();
-        }
-
-        private String resolveUniqueFilename(String baseName) {
-            File file = new File(baseName);
+        
+        private void receiveFile(String fileName) throws IOException {
+            File file = new File(fileName);
+            String actualFileName = fileName;
             int counter = 1;
-            String newName = baseName;
-
+            
             while (file.exists()) {
-                int dot = baseName.lastIndexOf('.');
-                if (dot != -1) {
-                    newName = baseName.substring(0, dot) + "_" + counter + baseName.substring(dot);
+                int dotIndex = fileName.lastIndexOf('.');
+                if (dotIndex > 0) {
+                    actualFileName = fileName.substring(0, dotIndex) + "_" + counter + 
+                                     fileName.substring(dotIndex);
                 } else {
-                    newName = baseName + "_" + counter;
+                    actualFileName = fileName + "_" + counter;
                 }
-                file = new File(newName);
+                file = new File(actualFileName);
                 counter++;
             }
-
-            return newName;
+            
+            try (FileOutputStream fileOutput = new FileOutputStream(file)) {
+                byte[] buffer = new byte[WINDOW_SIZE];
+                long totalBytesReceived = 0;
+                
+                while (true) {
+                    int sequenceNumber = input.readInt();
+                    
+                    if (sequenceNumber == -1) {
+                        System.out.println("End of transmission received");
+                        sendAck(-1); // Final ACK
+                        break;
+                    }
+                    
+                    int dataLength = input.readInt();
+                    
+                    // Read data
+                    int bytesRead = 0;
+                    while (bytesRead < dataLength) {
+                        int remaining = dataLength - bytesRead;
+                        int chunkSize = Math.min(remaining, WINDOW_SIZE);
+                        int read = input.read(buffer, bytesRead, chunkSize);
+                        if (read == -1) break;
+                        bytesRead += read;
+                    }
+                    
+                    // Randomly simulate packet loss
+                    boolean packetLost = ThreadLocalRandom.current().nextDouble() < PACKET_LOSS_PROBABILITY;
+                    
+                    if (packetLost) {
+                        System.out.println("Simulated packet loss for seq: " + sequenceNumber);
+                        // Don't send ACK - simulate packet loss
+                        continue;
+                    }
+                    
+                    System.out.println("Received packet with seq: " + sequenceNumber + 
+                                      ", Data len: " + dataLength + " bytes");
+                    
+                    if (sequenceNumber == expectedSeq) {
+                        // Process in-order packet
+                        fileOutput.write(buffer, 0, dataLength);
+                        totalBytesReceived += dataLength;
+                        highestInOrderSeq = sequenceNumber;
+                        expectedSeq++;
+                        
+                        // Process any buffered packets that are now in order
+                        while (bufferedPackets.containsKey(expectedSeq)) {
+                            byte[] bufferedData = bufferedPackets.remove(expectedSeq);
+                            fileOutput.write(bufferedData);
+                            totalBytesReceived += bufferedData.length;
+                            highestInOrderSeq = expectedSeq;
+                            expectedSeq++;
+                        }
+                        
+                        // Send cumulative ACK for highest in-order packet
+                        sendAck(highestInOrderSeq);
+                        System.out.println("Sent cumulative ACK for seq: " + highestInOrderSeq);
+                    } else if (sequenceNumber > expectedSeq) {
+                        // Buffer out-of-order packet
+                        byte[] packetData = new byte[dataLength];
+                        System.arraycopy(buffer, 0, packetData, 0, dataLength);
+                        bufferedPackets.put(sequenceNumber, packetData);
+                        
+                        // Send duplicate ACK for the last in-order packet received
+                        sendAck(highestInOrderSeq);
+                        System.out.println("Out of order packet. Sent duplicate ACK for seq: " + highestInOrderSeq);
+                    } else {
+                        // Duplicate packet - already received
+                        sendAck(highestInOrderSeq);
+                        System.out.println("Duplicate packet. Sent ACK for seq: " + highestInOrderSeq);
+                    }
+                }
+                
+                System.out.println("File transfer complete. Total bytes received: " + totalBytesReceived);
+                System.out.println("File saved as: " + actualFileName);
+            }
+        }
+        
+        private void sendAck(int ackNumber) throws IOException {
+            output.writeInt(ackNumber);
+            output.flush();
         }
     }
 }
