@@ -1,5 +1,5 @@
 // ============================
-// ✅ ClientSide.java (Deadlock Fixed)
+// ✅ ClientSide.java (TCP Reno Fixed)
 // ============================
 import java.io.*;
 import java.net.*;
@@ -36,8 +36,9 @@ public class ClientSide {
             List<Double> estimatedRTTs = new ArrayList<>();
             List<Integer> timeoutHistory = new ArrayList<>();
             List<Integer> cwndPerRound = new ArrayList<>();
+            List<String> eventLog = new ArrayList<>();
 
-            Reno reno = new Reno(8);
+            Reno reno = new Reno(8); // Start with ssthresh of 8
             int round = 1;
 
             while (continueRunning) {
@@ -65,19 +66,23 @@ public class ClientSide {
                 }
 
                 System.out.println("\nSending file: " + fileName);
+                System.out.println("=".repeat(50));
                 output.writeUTF(file.getName());
                 output.flush();
 
                 int serverWindowSize = input.readInt();
                 System.out.println("Server window size: " + serverWindowSize + " bytes");
 
+                // Reset Reno for new file transfer
+                reno.reset();
+
                 try (FileInputStream fileInput = new FileInputStream(file)) {
                     byte[] buffer = new byte[serverWindowSize];
                     int sequenceNumber = 0;
                     long totalBytesSent = 0;
                     int bytesRead;
-                    int lastAck = -1;
-                    int dupAckCount = 0;
+                    int lastAckReceived = -1;
+                    int consecutiveDupAcks = 0;
 
                     Map<Integer, byte[]> packetCache = new HashMap<>();
                     Map<Integer, Integer> packetSizes = new HashMap<>();
@@ -88,6 +93,7 @@ public class ClientSide {
                         packetSizes.put(sequenceNumber, bytesRead);
 
                         boolean packetAcknowledged = false;
+                        boolean isRetransmission = false;
 
                         while (!packetAcknowledged) {
                             try {
@@ -98,38 +104,16 @@ public class ClientSide {
                                 output.write(packet);
                                 output.flush();
 
-                                System.out.println("📤 Sent packet with seq: " + sequenceNumber + ", Data len: " + bytesRead + " bytes" + 
-                                    (dupAckCount > 0 ? " (retransmission)" : " (first attempt)"));
-
                                 int ack = input.readInt();
                                 long ackTime = System.currentTimeMillis();
                                 long sampleRTT = ackTime - sendTime;
 
-                                System.out.println("Received ACK: " + ack + " | SampleRTT: " + sampleRTT + " ms");
-
-                                // FIXED: Handle duplicate ACKs first, regardless of expected ACK
-                                if (ack == lastAck) {
-                                    dupAckCount++;
-                                    System.out.println("Duplicate ACK: " + ack + " (count=" + dupAckCount + ")");
-                                    if (dupAckCount == 3) {
-                                        System.out.println("🚨 Triple duplicate ACKs detected - Fast Retransmit triggered");
-                                        reno.onAck(true, 3);
-                                        dupAckCount = 0;
-                                        
-                                        // For fast retransmit, we continue with the current packet 
-                                        // (which should be the lost packet that needs retransmitting)
-                                        System.out.println("🔄 Fast retransmit: resending current packet seq: " + sequenceNumber);
-                                        continue;
-                                    }
-                                } else {
-                                    // FIXED: Reset duplicate count to 0 for new ACK, not 1
-                                    dupAckCount = 0;
-                                    lastAck = ack;
-                                    reno.onAck(false, 1);
-                                }
-
-                                // Check if this is the expected ACK
+                                // Process the ACK with TCP Reno logic
                                 if (ack == sequenceNumber) {
+                                    // Expected ACK received - packet acknowledged
+                                    reno.onAck(ack, true); // New ACK
+                                    
+                                    // Update RTT estimates
                                     estimatedRTT = (1 - alpha) * estimatedRTT + alpha * sampleRTT;
                                     devRTT = (1 - beta) * devRTT + beta * Math.abs(sampleRTT - estimatedRTT);
                                     timeoutInterval = Math.max((int)(estimatedRTT + 4 * devRTT), minTimeout);
@@ -142,19 +126,34 @@ public class ClientSide {
                                     packetAcknowledged = true;
                                     sequenceNumber++;
                                     totalBytesSent += bytesRead;
+                                    lastAckReceived = ack;
+                                    consecutiveDupAcks = 0;
 
+                                    // Record CWND for this round
                                     cwndPerRound.add(reno.getCwnd());
-                                    System.out.println("📊 End of Round " + round + " — CWND = " + reno.getCwnd());
                                     round++;
+
+                                } else if (ack == lastAckReceived) {
+                                    // Duplicate ACK
+                                    consecutiveDupAcks++;
+                                    reno.onAck(ack, false); // Duplicate ACK
+                                    
+                                    if (consecutiveDupAcks == 3) {
+                                        isRetransmission = true;
+                                    }
+                                    
                                 } else {
-                                    System.out.println("Unexpected ACK: " + ack + ", waiting for ACK: " + sequenceNumber);
+                                    // Unexpected ACK
+                                    reno.onAck(ack, true);
                                 }
 
                             } catch (SocketTimeoutException e) {
-                                System.out.println("⏰ Timeout triggered! Resending packet with seq: " + sequenceNumber + " (timeout: " + timeoutInterval + "ms)");
                                 reno.onTimeout();
-                                // Reset duplicate ACK count on timeout
-                                dupAckCount = 0;
+                                isRetransmission = true;
+                                consecutiveDupAcks = 0;;
+                                consecutiveDupAcks = 0;
+                                
+                                eventLog.add("Round " + round + ": TIMEOUT seq " + sequenceNumber + ", CWND=" + reno.getCwnd());
                                 // Continue the loop to resend the packet
                             }
                         }
@@ -164,36 +163,28 @@ public class ClientSide {
                     output.writeInt(-1);
                     output.writeInt(0);
                     output.flush();
-                    System.out.println("Sent end of transmission signal");
+                    System.out.println("📡 Sent end of transmission signal");
 
-                    // FIXED: Add timeout handling for final ACK
+                    // Handle final ACK
                     try {
                         int finalAck = input.readInt();
                         if (finalAck == -1) {
-                            System.out.println("Server acknowledged end of transmission");
+                            System.out.println("✅ Server acknowledged end of transmission");
                         }
                     } catch (SocketTimeoutException e) {
-                        System.out.println("Timeout waiting for final ACK - assuming transmission complete");
+                        System.out.println("⚠️ Timeout waiting for final ACK - assuming transmission complete");
                     }
 
-                    // Save RTT and CWND data
-                    try (PrintWriter writer = new PrintWriter(new File("rtt_data.csv"))) {
-                        writer.println("TimeIndex,SampleRTT,EstimatedRTT,TimeoutInterval");
-                        for (int i = 0; i < sampleRTTs.size(); i++) {
-                            writer.printf("%d,%d,%.2f,%d\n", i, sampleRTTs.get(i), estimatedRTTs.get(i), timeoutHistory.get(i));
-                        }
-                        System.out.println("RTT data saved to rtt_data.csv");
-                    }
-
-                    try (PrintWriter cwndWriter = new PrintWriter(new File("cwnd_data.csv"))) {
-                        cwndWriter.println("Round,CWND");
-                        for (int i = 0; i < cwndPerRound.size(); i++) {
-                            cwndWriter.printf("%d,%d\n", i + 1, cwndPerRound.get(i));
-                        }
-                        System.out.println("CWND data saved to cwnd_data.csv");
-                    }
-
-                    System.out.println("File transfer complete. Total bytes sent: " + totalBytesSent);
+                    // Save detailed data
+                    saveTransmissionData(sampleRTTs, estimatedRTTs, timeoutHistory, cwndPerRound, eventLog);
+                    
+                    System.out.println("\n" + "=".repeat(50));
+                    System.out.println("📊 TRANSMISSION COMPLETE");
+                    System.out.println("Total bytes sent: " + totalBytesSent);
+                    System.out.println("Total rounds: " + (round - 1));
+                    System.out.println("Final CWND: " + reno.getCwnd());
+                    System.out.println("Final SSThresh: " + reno.getSsthresh());
+                    System.out.println("=".repeat(50));
                 }
             }
 
@@ -202,5 +193,44 @@ public class ClientSide {
         }
 
         scanner.close();
+    }
+
+    private static void saveTransmissionData(List<Long> sampleRTTs, List<Double> estimatedRTTs, 
+                                           List<Integer> timeoutHistory, List<Integer> cwndPerRound,
+                                           List<String> eventLog) {
+        // Save RTT data
+        try (PrintWriter writer = new PrintWriter(new File("rtt_data.csv"))) {
+            writer.println("TimeIndex,SampleRTT,EstimatedRTT,TimeoutInterval");
+            for (int i = 0; i < sampleRTTs.size(); i++) {
+                writer.printf("%d,%d,%.2f,%d\n", i + 1, sampleRTTs.get(i), 
+                             estimatedRTTs.get(i), timeoutHistory.get(i));
+            }
+            System.out.println("📁 RTT data saved to rtt_data.csv");
+        } catch (IOException e) {
+            System.out.println("Error saving RTT data: " + e.getMessage());
+        }
+
+        // Save CWND data
+        try (PrintWriter cwndWriter = new PrintWriter(new File("cwnd_data.csv"))) {
+            cwndWriter.println("Round,CWND");
+            for (int i = 0; i < cwndPerRound.size(); i++) {
+                cwndWriter.printf("%d,%d\n", i + 1, cwndPerRound.get(i));
+            }
+            System.out.println("📁 CWND data saved to cwnd_data.csv");
+        } catch (IOException e) {
+            System.out.println("Error saving CWND data: " + e.getMessage());
+        }
+
+        // Save event log
+        try (PrintWriter eventWriter = new PrintWriter(new File("tcp_events.log"))) {
+            eventWriter.println("TCP Reno Event Log");
+            eventWriter.println("==================");
+            for (String event : eventLog) {
+                eventWriter.println(event);
+            }
+            System.out.println("📁 Event log saved to tcp_events.log");
+        } catch (IOException e) {
+            System.out.println("Error saving event log: " + e.getMessage());
+        }
     }
 }

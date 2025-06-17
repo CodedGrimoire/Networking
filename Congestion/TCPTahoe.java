@@ -1,12 +1,13 @@
 import java.util.*;
+import java.io.*;
 
 /**
- * TCP Tahoe Congestion Control Algorithm Implementation
+ * TCP Tahoe Congestion Control Algorithm Implementation - WITH CSV EXPORT
  * 
  * TCP Tahoe characteristics:
- * - Slow Start: Exponential growth (CWND doubles every RTT)
- * - Congestion Avoidance: Linear growth (CWND += 1 every RTT)
- * - Packet Loss Recovery: Always returns to CWND = 1 (no fast recovery)
+ * - Slow Start: Exponential growth (CWND doubles every RTT when cwnd < ssthresh)
+ * - Congestion Avoidance: Linear growth (CWND += 1 every RTT when cwnd >= ssthresh)
+ * - Packet Loss Recovery: Always returns to CWND = 1 and ssthresh = cwnd/2
  */
 public class TCPTahoe {
     
@@ -89,25 +90,25 @@ public class TCPTahoe {
         String event;
         
         if (packetLoss) {
-            // Handle packet loss (Tahoe behavior)
-            // Set ssthresh to half of current CWND (minimum 2)
+            // TCP Tahoe packet loss handling:
+            // 1. Set ssthresh to half of current CWND (minimum 2)
             ssthresh = Math.max(cwnd / 2.0, 2.0);
-            // Reset CWND to 1 (key difference from Reno)
+            // 2. Reset CWND to 1 (always, regardless of loss type)
             cwnd = 1.0;
-            phase = "Timeout Recovery";
+            phase = "Slow Start";  // Always return to slow start after loss
             event = "Packet Loss";
         } else {
-            // Normal operation - no packet loss
+            // Normal operation - determine phase and grow accordingly
             if (cwnd < ssthresh) {
-                // Slow Start: Exponential growth
-                cwnd *= 2;
+                // Slow Start: Exponential growth (double every RTT)
+                cwnd *= 2.0;
                 phase = "Slow Start";
             } else {
-                // Congestion Avoidance: Linear growth
-                cwnd += 1;
+                // Congestion Avoidance: Linear growth (add 1 every RTT)
+                cwnd += 1.0;
                 phase = "Congestion Avoidance";
             }
-            event = "Normal Growth";
+            event = "ACK Received";
         }
         
         // Record history
@@ -140,6 +141,27 @@ public class TCPTahoe {
         }
         
         return getHistory();
+    }
+    
+    /**
+     * Simulate TCP Tahoe with random packet loss
+     * 
+     * @param numRounds Number of rounds to simulate
+     * @param lossRate Probability of packet loss per round (0.0 to 1.0)
+     * @param seed Random seed for reproducible results
+     * @return SimulationHistory object with complete history
+     */
+    public SimulationHistory simulateWithRandomLoss(int numRounds, double lossRate, long seed) {
+        Random random = new Random(seed);
+        List<Integer> packetLossRounds = new ArrayList<>();
+        
+        for (int i = 1; i <= numRounds; i++) {
+            if (random.nextDouble() < lossRate) {
+                packetLossRounds.add(i);
+            }
+        }
+        
+        return simulate(numRounds, packetLossRounds);
     }
     
     /**
@@ -182,7 +204,6 @@ public class TCPTahoe {
         
         long slowStartRounds = phases.stream().mapToLong(p -> p.equals("Slow Start") ? 1 : 0).sum();
         long congestionAvoidanceRounds = phases.stream().mapToLong(p -> p.equals("Congestion Avoidance") ? 1 : 0).sum();
-        long timeoutRecoveryRounds = phases.stream().mapToLong(p -> p.equals("Timeout Recovery") ? 1 : 0).sum();
         long packetLossEvents = events.stream().mapToLong(e -> e.equals("Packet Loss") ? 1 : 0).sum();
         
         return new Statistics(
@@ -192,9 +213,43 @@ public class TCPTahoe {
             avgCwnd,
             (int) slowStartRounds,
             (int) congestionAvoidanceRounds,
-            (int) timeoutRecoveryRounds,
             (int) packetLossEvents
         );
+    }
+    
+    /**
+     * Export simulation data to CSV format
+     * 
+     * @return CSV formatted string
+     */
+    public String exportToCSV() {
+        StringBuilder csv = new StringBuilder();
+        csv.append("Round,CWND,SSThresh,Phase,Event\n");
+        
+        for (int i = 0; i < rounds.size(); i++) {
+            csv.append(String.format("%d,%.1f,%.1f,%s,%s\n",
+                rounds.get(i),
+                cwndValues.get(i),
+                ssthreshValues.get(i),
+                phases.get(i),
+                events.get(i)));
+        }
+        
+        return csv.toString();
+    }
+    
+    /**
+     * Write simulation data to CSV file
+     * 
+     * @param filename Name of the CSV file to write
+     */
+    public void writeToCSV(String filename) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
+            writer.print(exportToCSV());
+            System.out.println("CSV data written to " + filename);
+        } catch (IOException e) {
+            System.err.println("Error writing CSV file: " + e.getMessage());
+        }
     }
     
     // Getters
@@ -280,23 +335,20 @@ public class TCPTahoe {
         public final double avgCwnd;
         public final int slowStartRounds;
         public final int congestionAvoidanceRounds;
-        public final int timeoutRecoveryRounds;
         public final int packetLossEvents;
         
         public Statistics() {
-            this(0, 0, 0, 0, 0, 0, 0, 0);
+            this(0, 0, 0, 0, 0, 0, 0);
         }
         
         public Statistics(int totalRounds, double maxCwnd, double minCwnd, double avgCwnd,
-                         int slowStartRounds, int congestionAvoidanceRounds,
-                         int timeoutRecoveryRounds, int packetLossEvents) {
+                         int slowStartRounds, int congestionAvoidanceRounds, int packetLossEvents) {
             this.totalRounds = totalRounds;
             this.maxCwnd = maxCwnd;
             this.minCwnd = minCwnd;
             this.avgCwnd = avgCwnd;
             this.slowStartRounds = slowStartRounds;
             this.congestionAvoidanceRounds = congestionAvoidanceRounds;
-            this.timeoutRecoveryRounds = timeoutRecoveryRounds;
             this.packetLossEvents = packetLossEvents;
         }
         
@@ -315,34 +367,36 @@ public class TCPTahoe {
         // Create TCP Tahoe instance
         TCPTahoe tahoe = new TCPTahoe();
         
-        // Simulate with some packet losses
-        List<Integer> packetLosses = Arrays.asList(25, 50, 75);
+        System.out.println("TCP Tahoe Simulation with CSV Export:");
+        System.out.println("=".repeat(50));
+        
+        // Run simulation with packet losses at strategic points
+        List<Integer> packetLosses = Arrays.asList(15, 35, 60, 85);
         SimulationHistory history = tahoe.simulate(100, packetLosses);
         
-        // Print results
-        System.out.println("TCP Tahoe Simulation Results:");
-        System.out.println("=".repeat(40));
-        
+        // Display statistics
         Statistics stats = tahoe.getStatistics();
+        System.out.println("\nSimulation Results:");
         System.out.println(stats);
         
-        System.out.println("\nFirst 10 rounds:");
-        for (int i = 0; i < Math.min(10, history.rounds.size()); i++) {
-            System.out.printf("Round %d: CWND=%.1f, SSThresh=%.1f, Phase=%s%n",
+        // Export to CSV
+        tahoe.writeToCSV("tcp_tahoe_simulation.csv");
+        
+        // Show some key events
+        System.out.println("\nKey Events (Packet Losses and Phase Transitions):");
+        for (int i = 0; i < history.events.size(); i++) {
+            if (history.events.get(i).equals("Packet Loss") || 
+                (i > 0 && !history.phases.get(i).equals(history.phases.get(i-1)))) {
+                System.out.printf("Round %d: CWND=%.1f, SSThresh=%.1f, %s, %s\n",
                     history.rounds.get(i),
                     history.cwndValues.get(i),
                     history.ssthreshValues.get(i),
-                    history.phases.get(i));
-        }
-        
-        System.out.println("\nRounds with packet loss:");
-        for (int i = 0; i < history.events.size(); i++) {
-            if ("Packet Loss".equals(history.events.get(i))) {
-                System.out.printf("Round %d: CWND reset to %.1f, SSThresh set to %.1f%n",
-                        history.rounds.get(i),
-                        history.cwndValues.get(i),
-                        history.ssthreshValues.get(i));
+                    history.phases.get(i),
+                    history.events.get(i));
             }
         }
+        
+        System.out.println("\nCSV file 'tcp_tahoe_simulation.csv' has been generated.");
+        System.out.println("You can now run 'python graph2.py' to plot the results.");
     }
 }

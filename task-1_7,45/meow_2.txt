@@ -45,12 +45,4 @@ internal email domains and IP mappings.
 • Configure the mail servers with DNS support so that devices from any department can send and receive
 emails between HQ-A and HQ-B using SMTP protocol.
 You step-by-step task will be as follows
-1. Design a network topology that includes: a) Workstations b) Switches c) Routers d) Mail servers e) DNS
-servers
-2. Configure each device with its: a) Static IP address b) Hostname
-3. Set up DNS servers in each HQ building to resolve domain names like:
-• eng.ny.greentech.com → 192.168.10.x
-• bd.ldn.greentech.com → 192.168.20.x
-4. Test Email Exchange:
-• Send an email from cto@eng.ny.greentech.com to ceo@bd.ldn.greentech.com
-• Send a reply from ceo@bd.ldn.greentech.com to cto@eng.ny.greentech.com
+1. Design a netwo
