@@ -1,3 +1,6 @@
+// =============================
+// ✅ ServerSide.java (Deadlock Fixed)
+// =============================
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -6,8 +9,8 @@ import java.util.concurrent.ThreadLocalRandom;
 public class ServerSide {
     private static final int PORT = 3002;
     private static final int WINDOW_SIZE = 10;
-    private static final double PACKET_LOSS_PROBABILITY = 0.2;
-    private static final double TRIPLE_DUP_ACK_PROBABILITY = 0.2; // <-- added
+    private static final double PACKET_LOSS_PROBABILITY = 0.1;
+    private static final double TRIPLE_DUP_ACK_PROBABILITY = 0.1;
 
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
@@ -26,7 +29,8 @@ public class ServerSide {
 
     private static class ClientHandler extends Thread {
         private final Socket clientSocket;
-        private final Set<Integer> triggeredFakeDupACK = new HashSet<>(); // <-- added
+        private final Set<Integer> droppedPackets = new HashSet<>();
+        private final Set<Integer> fakeDupACKs = new HashSet<>();
 
         public ClientHandler(Socket socket) {
             this.clientSocket = socket;
@@ -103,32 +107,63 @@ public class ServerSide {
                         bytesRead += read;
                     }
 
-                    boolean packetLost = ThreadLocalRandom.current().nextDouble() < PACKET_LOSS_PROBABILITY;
-                    if (packetLost) {
-                        System.out.println("Simulated packet loss for seq: " + sequenceNumber);
-                        continue;
+                    System.out.println("📥 Received packet with seq: " + sequenceNumber + ", Data len: " + dataLength + " bytes");
+
+                    // Simulate packet loss only on first transmission
+                    boolean shouldDrop = false;
+                    if (!droppedPackets.contains(sequenceNumber)) {
+                        if (ThreadLocalRandom.current().nextDouble() < PACKET_LOSS_PROBABILITY) {
+                            droppedPackets.add(sequenceNumber);
+                            shouldDrop = true;
+                            System.out.println("❌ Simulated packet loss for seq: " + sequenceNumber + " (first transmission)");
+                        }
+                    } else {
+                        // This is a retransmission - remove from dropped set and process normally
+                        droppedPackets.remove(sequenceNumber);
+                        System.out.println("🔄 Processing retransmission for seq: " + sequenceNumber);
+                    }
+                    
+                    if (shouldDrop) {
+                        continue; // Skip processing this packet
                     }
 
-                    // ✅ Simulate triple duplicate ACKs (fake loss)
-                    if (sequenceNumber == expectedSeq && !triggeredFakeDupACK.contains(sequenceNumber) &&
-                            ThreadLocalRandom.current().nextDouble() < TRIPLE_DUP_ACK_PROBABILITY) {
-                        System.out.println("Simulating triple duplicate ACKs for seq: " + sequenceNumber);
+                    // Simulate triple duplicate ACKs only under specific conditions
+                    if (sequenceNumber == expectedSeq && 
+                        highestInOrderSeq >= 0 && 
+                        sequenceNumber > 0 &&  // Don't do this for the very first packet
+                        !fakeDupACKs.contains(sequenceNumber) &&
+                        ThreadLocalRandom.current().nextDouble() < TRIPLE_DUP_ACK_PROBABILITY) {
+                        
+                        fakeDupACKs.add(sequenceNumber);
+                        System.out.println("⚠️ Simulating triple duplicate ACKs for seq: " + sequenceNumber);
+                        
+                        // Send 3 duplicate ACKs with the last valid ACK number
                         for (int i = 0; i < 3; i++) {
                             sendAck(output, highestInOrderSeq);
-                            System.out.println("↩️ [FAKE DUP ACK] Sent ACK for seq: " + highestInOrderSeq);
+                            System.out.println("↩️ [FAKE DUP ACK " + (i+1) + "/3] Sent duplicate ACK: " + highestInOrderSeq);
+                            
+                            // Small delay between duplicate ACKs
+                            try {
+                                Thread.sleep(5);
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                                break;
+                            }
                         }
-                        triggeredFakeDupACK.add(sequenceNumber);
-                        continue;
+                        
+                        // After sending fake duplicate ACKs, process the packet normally
+                        // (This simulates the packet finally getting through after triggering fast retransmit)
                     }
 
-                    System.out.println("Received packet with seq: " + sequenceNumber + ", Data len: " + dataLength + " bytes");
-
+                    // Process the packet normally
                     if (sequenceNumber == expectedSeq) {
+                        // In-order packet
                         fileOutput.write(buffer, 0, dataLength);
                         totalBytesReceived += dataLength;
                         highestInOrderSeq = sequenceNumber;
                         expectedSeq++;
 
+                        // Process any buffered out-of-order packets that are now in order
                         while (bufferedPackets.containsKey(expectedSeq)) {
                             byte[] bufferedData = bufferedPackets.remove(expectedSeq);
                             fileOutput.write(bufferedData);
@@ -138,20 +173,24 @@ public class ServerSide {
                         }
 
                         sendAck(output, highestInOrderSeq);
-                        System.out.println("Sent cumulative ACK for seq: " + highestInOrderSeq);
+                        System.out.println("✅ Sent cumulative ACK for seq: " + highestInOrderSeq);
+                        
                     } else if (sequenceNumber > expectedSeq) {
+                        // Out-of-order packet - buffer it
                         byte[] packetData = Arrays.copyOf(buffer, dataLength);
                         bufferedPackets.put(sequenceNumber, packetData);
                         sendAck(output, highestInOrderSeq);
-                        System.out.println("Out of order packet. Sent duplicate ACK for seq: " + highestInOrderSeq);
+                        System.out.println("📦 Out-of-order packet (seq: " + sequenceNumber + ", expected: " + expectedSeq + "). Sent duplicate ACK for seq: " + highestInOrderSeq);
+                        
                     } else {
+                        // Duplicate packet (sequenceNumber < expectedSeq)
                         sendAck(output, highestInOrderSeq);
-                        System.out.println("Duplicate packet. Sent ACK for seq: " + highestInOrderSeq);
+                        System.out.println("🔁 Duplicate packet (seq: " + sequenceNumber + ", expected: " + expectedSeq + "). Sent ACK for seq: " + highestInOrderSeq);
                     }
                 }
 
-                System.out.println("File transfer complete. Total bytes received: " + totalBytesReceived);
-                System.out.println("File saved as: " + actualFileName);
+                System.out.println("📁 File transfer complete. Total bytes received: " + totalBytesReceived);
+                System.out.println("📥 File saved as: " + actualFileName);
             }
         }
 
