@@ -1,101 +1,133 @@
-Round,CWND,Phase
-1,1.0,Slow Start
-2,2.0,Slow Start
-3,4.0,Slow Start
-4,8.0,Slow Start
-5,16.0,Congestion Avoidance
-6,17.0,Congestion Avoidance
-7,18.0,Congestion Avoidance
-8,19.0,Congestion Avoidance
-9,20.0,Congestion Avoidance
-10,21.0,Congestion Avoidance
-11,22.0,Congestion Avoidance
-12,23.0,Congestion Avoidance
-13,24.0,Congestion Avoidance
-14,25.0,Congestion Avoidance
-15,26.0,Congestion Avoidance
-16,27.0,Congestion Avoidance
-17,28.0,Congestion Avoidance
-18,29.0,Congestion Avoidance
-19,30.0,Congestion Avoidance
-20,31.0,Congestion Avoidance
-21,32.0,Congestion Avoidance
-22,33.0,Congestion Avoidance
-23,34.0,Congestion Avoidance
-24,35.0,Congestion Avoidance
-25,36.0,Fast Recovery
-26,18.0,Congestion Avoidance
-27,19.0,Congestion Avoidance
-28,20.0,Congestion Avoidance
-29,21.0,Congestion Avoidance
-30,22.0,Congestion Avoidance
-31,23.0,Congestion Avoidance
-32,24.0,Congestion Avoidance
-33,25.0,Congestion Avoidance
-34,26.0,Congestion Avoidance
-35,27.0,Congestion Avoidance
-36,28.0,Congestion Avoidance
-37,29.0,Congestion Avoidance
-38,30.0,Congestion Avoidance
-39,31.0,Congestion Avoidance
-40,32.0,Congestion Avoidance
-41,33.0,Congestion Avoidance
-42,34.0,Congestion Avoidance
-43,35.0,Congestion Avoidance
-44,36.0,Congestion Avoidance
-45,37.0,Congestion Avoidance
-46,38.0,Congestion Avoidance
-47,39.0,Congestion Avoidance
-48,40.0,Congestion Avoidance
-49,41.0,Congestion Avoidance
-50,42.0,Congestion Avoidance
-51,43.0,Congestion Avoidance
-52,44.0,Congestion Avoidance
-53,45.0,Congestion Avoidance
-54,46.0,Congestion Avoidance
-55,47.0,Fast Recovery
-56,23.5,Congestion Avoidance
-57,24.5,Congestion Avoidance
-58,25.5,Congestion Avoidance
-59,26.5,Congestion Avoidance
-60,27.5,Congestion Avoidance
-61,28.5,Congestion Avoidance
-62,29.5,Congestion Avoidance
-63,30.5,Congestion Avoidance
-64,31.5,Congestion Avoidance
-65,32.5,Congestion Avoidance
-66,33.5,Congestion Avoidance
-67,34.5,Congestion Avoidance
-68,35.5,Congestion Avoidance
-69,36.5,Congestion Avoidance
-70,37.5,Congestion Avoidance
-71,38.5,Congestion Avoidance
-72,39.5,Congestion Avoidance
-73,40.5,Congestion Avoidance
-74,41.5,Congestion Avoidance
-75,42.5,Congestion Avoidance
-76,43.5,Congestion Avoidance
-77,44.5,Congestion Avoidance
-78,45.5,Congestion Avoidance
-79,46.5,Congestion Avoidance
-80,47.5,Congestion Avoidance
-81,48.5,Congestion Avoidance
-82,49.5,Congestion Avoidance
-83,50.5,Congestion Avoidance
-84,51.5,Congestion Avoidance
-85,52.5,Fast Recovery
-86,26.25,Congestion Avoidance
-87,27.25,Congestion Avoidance
-88,28.25,Congestion Avoidance
-89,29.25,Congestion Avoidance
-90,30.25,Congestion Avoidance
-91,31.25,Congestion Avoidance
-92,32.25,Congestion Avoidance
-93,33.25,Congestion Avoidance
-94,34.25,Congestion Avoidance
-95,35.25,Congestion Avoidance
-96,36.25,Congestion Avoidance
-97,37.25,Congestion Avoidance
-98,38.25,Congestion Avoidance
-99,39.25,Congestion Avoidance
-100,40.25,Congestion Avoidance
+Round,CWND,SSThresh,Phase,Event,FastRecovery,DupACKs
+1,2,8,Slow Start,ACK Received,false,0
+2,4,8,Slow Start,ACK Received,false,0
+3,8,8,Slow Start,ACK Received,false,0
+4,9,8,Congestion Avoidance,ACK Received,false,0
+5,10,8,Congestion Avoidance,ACK Received,false,0
+6,11,8,Congestion Avoidance,ACK Received,false,0
+7,12,8,Congestion Avoidance,ACK Received,false,0
+8,13,8,Congestion Avoidance,ACK Received,false,0
+9,14,8,Congestion Avoidance,ACK Received,false,0
+10,15,8,Congestion Avoidance,ACK Received,false,0
+11,16,8,Congestion Avoidance,ACK Received,false,0
+12,17,8,Congestion Avoidance,ACK Received,false,0
+13,1,8,Slow Start,Timeout,false,0
+14,2,8,Slow Start,ACK Received,false,0
+15,4,8,Slow Start,ACK Received,false,0
+16,8,8,Slow Start,ACK Received,false,0
+17,1,4,Slow Start,Timeout,false,0
+18,2,4,Slow Start,ACK Received,false,0
+19,4,4,Slow Start,ACK Received,false,0
+20,5,4,Congestion Avoidance,ACK Received,false,0
+21,6,4,Congestion Avoidance,ACK Received,false,0
+22,7,4,Congestion Avoidance,ACK Received,false,0
+23,8,4,Congestion Avoidance,ACK Received,false,0
+24,9,4,Congestion Avoidance,ACK Received,false,0
+25,10,4,Congestion Avoidance,ACK Received,false,0
+26,11,4,Congestion Avoidance,ACK Received,false,0
+27,12,4,Congestion Avoidance,ACK Received,false,0
+28,13,4,Congestion Avoidance,ACK Received,false,0
+29,9,6,Fast Recovery,Triple Dup ACK,true,3
+30,6,6,Congestion Avoidance,Exit Fast Recovery,false,0
+31,7,6,Congestion Avoidance,ACK Received,false,0
+32,8,6,Congestion Avoidance,ACK Received,false,0
+33,9,6,Congestion Avoidance,ACK Received,false,0
+34,7,4,Fast Recovery,Triple Dup ACK,true,3
+35,8,4,Fast Recovery,Additional Dup ACK,true,4
+36,9,4,Fast Recovery,Additional Dup ACK,true,5
+37,4,4,Congestion Avoidance,Exit Fast Recovery,false,0
+38,5,2,Fast Recovery,Triple Dup ACK,true,3
+39,6,2,Fast Recovery,Additional Dup ACK,true,4
+40,7,2,Fast Recovery,Additional Dup ACK,true,5
+41,2,2,Congestion Avoidance,Exit Fast Recovery,false,0
+42,4,1,Fast Recovery,Triple Dup ACK,true,3
+43,5,1,Fast Recovery,Additional Dup ACK,true,4
+44,6,1,Fast Recovery,Additional Dup ACK,true,5
+45,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
+46,4,1,Fast Recovery,Triple Dup ACK,true,3
+47,5,1,Fast Recovery,Additional Dup ACK,true,4
+48,6,1,Fast Recovery,Additional Dup ACK,true,5
+49,7,1,Fast Recovery,Additional Dup ACK,true,6
+50,8,1,Fast Recovery,Additional Dup ACK,true,7
+51,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
+52,4,1,Fast Recovery,Triple Dup ACK,true,3
+53,5,1,Fast Recovery,Additional Dup ACK,true,4
+54,6,1,Fast Recovery,Additional Dup ACK,true,5
+55,7,1,Fast Recovery,Additional Dup ACK,true,6
+56,8,1,Fast Recovery,Additional Dup ACK,true,7
+57,9,1,Fast Recovery,Additional Dup ACK,true,8
+58,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
+59,4,1,Fast Recovery,Triple Dup ACK,true,3
+60,5,1,Fast Recovery,Additional Dup ACK,true,4
+61,6,1,Fast Recovery,Additional Dup ACK,true,5
+62,7,1,Fast Recovery,Additional Dup ACK,true,6
+63,8,1,Fast Recovery,Additional Dup ACK,true,7
+64,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
+65,4,1,Fast Recovery,Triple Dup ACK,true,3
+66,5,1,Fast Recovery,Additional Dup ACK,true,4
+67,6,1,Fast Recovery,Additional Dup ACK,true,5
+68,7,1,Fast Recovery,Additional Dup ACK,true,6
+69,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
+70,4,1,Fast Recovery,Triple Dup ACK,true,3
+71,5,1,Fast Recovery,Additional Dup ACK,true,4
+72,6,1,Fast Recovery,Additional Dup ACK,true,5
+73,7,1,Fast Recovery,Additional Dup ACK,true,6
+74,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
+75,4,1,Fast Recovery,Triple Dup ACK,true,3
+76,5,1,Fast Recovery,Additional Dup ACK,true,4
+77,6,1,Fast Recovery,Additional Dup ACK,true,5
+78,7,1,Fast Recovery,Additional Dup ACK,true,6
+79,8,1,Fast Recovery,Additional Dup ACK,true,7
+80,9,1,Fast Recovery,Additional Dup ACK,true,8
+81,10,1,Fast Recovery,Additional Dup ACK,true,9
+82,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
+83,4,1,Fast Recovery,Triple Dup ACK,true,3
+84,5,1,Fast Recovery,Additional Dup ACK,true,4
+85,6,1,Fast Recovery,Additional Dup ACK,true,5
+86,7,1,Fast Recovery,Additional Dup ACK,true,6
+87,8,1,Fast Recovery,Additional Dup ACK,true,7
+88,9,1,Fast Recovery,Additional Dup ACK,true,8
+89,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
+90,4,1,Fast Recovery,Triple Dup ACK,true,3
+91,5,1,Fast Recovery,Additional Dup ACK,true,4
+92,6,1,Fast Recovery,Additional Dup ACK,true,5
+93,7,1,Fast Recovery,Additional Dup ACK,true,6
+94,8,1,Fast Recovery,Additional Dup ACK,true,7
+95,9,1,Fast Recovery,Additional Dup ACK,true,8
+96,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
+97,4,1,Fast Recovery,Triple Dup ACK,true,3
+98,5,1,Fast Recovery,Additional Dup ACK,true,4
+99,6,1,Fast Recovery,Additional Dup ACK,true,5
+100,7,1,Fast Recovery,Additional Dup ACK,true,6
+101,8,1,Fast Recovery,Additional Dup ACK,true,7
+102,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
+103,4,1,Fast Recovery,Triple Dup ACK,true,3
+104,5,1,Fast Recovery,Additional Dup ACK,true,4
+105,6,1,Fast Recovery,Additional Dup ACK,true,5
+106,7,1,Fast Recovery,Additional Dup ACK,true,6
+107,8,1,Fast Recovery,Additional Dup ACK,true,7
+108,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
+109,4,1,Fast Recovery,Triple Dup ACK,true,3
+110,5,1,Fast Recovery,Additional Dup ACK,true,4
+111,6,1,Fast Recovery,Additional Dup ACK,true,5
+112,7,1,Fast Recovery,Additional Dup ACK,true,6
+113,8,1,Fast Recovery,Additional Dup ACK,true,7
+114,9,1,Fast Recovery,Additional Dup ACK,true,8
+115,10,1,Fast Recovery,Additional Dup ACK,true,9
+116,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
+117,4,1,Fast Recovery,Triple Dup ACK,true,3
+118,5,1,Fast Recovery,Additional Dup ACK,true,4
+119,6,1,Fast Recovery,Additional Dup ACK,true,5
+120,7,1,Fast Recovery,Additional Dup ACK,true,6
+121,8,1,Fast Recovery,Additional Dup ACK,true,7
+122,9,1,Fast Recovery,Additional Dup ACK,true,8
+123,10,1,Fast Recovery,Additional Dup ACK,true,9
+124,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
+125,4,1,Fast Recovery,Triple Dup ACK,true,3
+126,5,1,Fast Recovery,Additional Dup ACK,true,4
+127,6,1,Fast Recovery,Additional Dup ACK,true,5
+128,7,1,Fast Recovery,Additional Dup ACK,true,6
+129,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
+130,4,1,Fast Recovery,Triple Dup ACK,true,3
+131,5,1,Fast Recovery,Additional Dup ACK,true,4
+132,6,1,Fast Recovery,Additional Dup ACK,true,5

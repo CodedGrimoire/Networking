@@ -6,6 +6,7 @@ public class TCPTahoe {
     private double ssthresh;
     private final double initialSsthresh;
     private int lastAckReceived;
+    private String csvFilename; // Auto-save filename
     
     // History tracking for CSV export
     private List<Integer> rounds;
@@ -16,7 +17,12 @@ public class TCPTahoe {
     private int roundNum;
 
     public TCPTahoe(double initialSsthresh) {
+        this(initialSsthresh, "tcp_tahoe_simulation.csv"); // Default filename
+    }
+    
+    public TCPTahoe(double initialSsthresh, String csvFilename) {
         this.initialSsthresh = initialSsthresh;
+        this.csvFilename = csvFilename;
         this.cwnd = 1.0; // Initial congestion window
         this.ssthresh = initialSsthresh;
         this.lastAckReceived = -1;
@@ -28,6 +34,9 @@ public class TCPTahoe {
         this.ssthreshValues = new ArrayList<>();
         this.phases = new ArrayList<>();
         this.events = new ArrayList<>();
+        
+        // Create initial CSV file with headers
+        initializeCSVFile();
     }
 
     public int getCwnd() {
@@ -36,6 +45,13 @@ public class TCPTahoe {
 
     public int getSsthresh() {
         return (int) Math.ceil(ssthresh);
+    }
+    
+    /**
+     * Set the CSV filename for auto-saving
+     */
+    public void setCSVFilename(String filename) {
+        this.csvFilename = filename;
     }
 
     /**
@@ -64,12 +80,10 @@ public class TCPTahoe {
                 System.out.println("📊 Congestion Avoidance: cwnd -> " + getCwnd());
             }
             
-            // Record history
+            // Record history and auto-save to CSV
             recordHistory(phase, event);
         } else {
             // Duplicate ACK received - TCP Tahoe treats any loss as congestion
-            // Note: In a real implementation, you might want to count duplicate ACKs
-            // before triggering congestion response, but classic Tahoe is simpler
             System.out.println("⚠️ Duplicate ACK received for seq: " + ackNumber);
         }
     }
@@ -89,7 +103,7 @@ public class TCPTahoe {
         
         System.out.println("Updated ssthresh: " + getSsthresh() + ", cwnd reset to 1 (Slow Start)");
         
-        // Record history
+        // Record history and auto-save to CSV
         recordHistory("Slow Start", "Packet Loss");
     }
 
@@ -106,7 +120,7 @@ public class TCPTahoe {
         
         System.out.println("Updated ssthresh: " + getSsthresh() + ", cwnd reset to 1 (Slow Start)");
         
-        // Record history
+        // Record history and auto-save to CSV
         recordHistory("Slow Start", "Triple Dup ACK");
     }
 
@@ -127,6 +141,9 @@ public class TCPTahoe {
         events.clear();
         
         System.out.println("🔄 TCP Tahoe reset: cwnd=1, ssthresh=" + getSsthresh());
+        
+        // Reinitialize CSV file
+        initializeCSVFile();
     }
     
     /**
@@ -146,18 +163,47 @@ public class TCPTahoe {
     }
     
     /**
-     * Record history for CSV export
+     * Initialize CSV file with headers
+     */
+    private void initializeCSVFile() {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(csvFilename))) {
+            writer.println("Round,CWND,SSThresh,Phase,Event");
+            System.out.println("📁 Initialized CSV file: " + csvFilename);
+        } catch (IOException e) {
+            System.err.println("Error initializing CSV file: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Record history and auto-save to CSV at each round
      */
     private void recordHistory(String phase, String event) {
+        // Add to memory lists
         rounds.add(roundNum);
         cwndValues.add(cwnd);
         ssthreshValues.add(ssthresh);
         phases.add(phase);
         events.add(event);
+        
+        // Auto-save to CSV file immediately
+        appendToCSV(roundNum, cwnd, ssthresh, phase, event);
+        
+        System.out.println("💾 Round " + roundNum + " data saved to " + csvFilename);
     }
     
     /**
-     * Export simulation data to CSV format
+     * Append single round data to CSV file
+     */
+    private void appendToCSV(int round, double cwnd, double ssthresh, String phase, String event) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(csvFilename, true))) {
+            writer.printf("%d,%.1f,%.1f,%s,%s%n", round, cwnd, ssthresh, phase, event);
+        } catch (IOException e) {
+            System.err.println("Error writing to CSV file: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Export simulation data to CSV format (for manual export)
      */
     public String exportToCSV() {
         StringBuilder csv = new StringBuilder();
@@ -176,12 +222,12 @@ public class TCPTahoe {
     }
     
     /**
-     * Write simulation data to CSV file
+     * Write complete simulation data to a different CSV file (manual export)
      */
     public void writeToCSV(String filename) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
             writer.print(exportToCSV());
-            System.out.println("📁 TCP Tahoe data written to " + filename);
+            System.out.println("📁 Complete TCP Tahoe data written to " + filename);
         } catch (IOException e) {
             System.err.println("Error writing CSV file: " + e.getMessage());
         }
@@ -213,6 +259,10 @@ public class TCPTahoe {
         System.out.println("Slow Start Rounds: " + slowStartRounds);
         System.out.println("Congestion Avoidance Rounds: " + congestionAvoidanceRounds);
         System.out.println("Packet Loss Events: " + packetLossEvents);
+        System.out.println("CSV File: " + csvFilename);
         System.out.println("=".repeat(50));
     }
+    
+   
+    
 }
