@@ -57,18 +57,12 @@ public class Reno {
         return inFastRecovery;
     }
     
-    /**
-     * Set the CSV filename for auto-saving
-     */
+   
     public void setCSVFilename(String filename) {
         this.csvFilename = filename;
     }
 
-    /**
-     * Handle ACK reception - this should be called for each ACK received
-     * @param ackNumber The ACK number received
-     * @param isNewAck Whether this is a new ACK (advancing the window) or duplicate
-     */
+    
     public void onAck(int ackNumber, boolean isNewAck) {
         if (!isNewAck) {
             // Duplicate ACK received
@@ -79,7 +73,7 @@ public class Reno {
                 if (duplicateAckCount == 3 && !inFastRecovery) {
                     // Triple duplicate ACK - trigger fast retransmit/fast recovery
                     roundNum++;
-                    System.out.println("🚨 Triple duplicate ACKs — Fast Retransmit triggered.");
+                    System.out.println(" Triple duplicate ACKs — Fast Retransmit triggered.");
                     ssthresh = Math.max(cwnd / 2, 1);
                     cwnd = ssthresh + 3; // Fast recovery: ssthresh + 3 (for the 3 dup ACKs)
                     inFastRecovery = true;
@@ -107,7 +101,7 @@ public class Reno {
                 cwnd = ssthresh;
                 inFastRecovery = false;
                 duplicateAckCount = 0;
-                System.out.println("🔄 Exiting Fast Recovery: cwnd -> " + cwnd);
+                System.out.println(" Exiting Fast Recovery: cwnd -> " + cwnd);
                 
                 // Record history and auto-save to CSV
                 recordHistory("Congestion Avoidance", "Exit Fast Recovery");
@@ -121,12 +115,12 @@ public class Reno {
                     // Slow start (exponential growth) - double every RTT
                     cwnd = cwnd * 2;
                     phase = "Slow Start";
-                    System.out.println("📈 Slow Start: cwnd -> " + cwnd);
+                    System.out.println("Slow Start: cwnd -> " + cwnd);
                 } else {
                     // Congestion avoidance (linear growth) - increase by 1 every RTT
                     cwnd = cwnd + 1;
                     phase = "Congestion Avoidance";
-                    System.out.println("📊 Congestion Avoidance: cwnd -> " + cwnd);
+                    System.out.println("Congestion Avoidance: cwnd -> " + cwnd);
                 }
                 
                 // Record history and auto-save to CSV
@@ -136,7 +130,7 @@ public class Reno {
     }
 
     public void onTimeout() {
-        System.out.println("⏰ Timeout occurred — treating as congestion signal.");
+        System.out.println("Timeout occurred — treating as congestion signal.");
         roundNum++;
         
         ssthresh = Math.max(cwnd / 2, 1);
@@ -149,9 +143,7 @@ public class Reno {
         recordHistory("Slow Start", "Timeout");
     }
 
-    /**
-     * Reset the Reno state for a new connection
-     */
+    
     public void reset() {
         this.cwnd = 1;
         this.ssthresh = initialSsthresh;
@@ -168,15 +160,13 @@ public class Reno {
         events.clear();
         fastRecoveryStatus.clear();
         
-        System.out.println("🔄 TCP Reno reset: cwnd=1, ssthresh=" + ssthresh);
+        System.out.println("TCP Reno reset: cwnd=1, ssthresh=" + ssthresh);
         
         // Reinitialize CSV file
         initializeCSVFile();
     }
     
-    /**
-     * Get current state information for debugging
-     */
+    
     public String getCurrentState() {
         String phase = inFastRecovery ? "Fast Recovery" : 
                       (cwnd < ssthresh ? "Slow Start" : "Congestion Avoidance");
@@ -184,29 +174,23 @@ public class Reno {
                            cwnd, ssthresh, phase, duplicateAckCount);
     }
     
-    /**
-     * Get current phase based on CWND, ssthresh, and fast recovery state
-     */
+   
     public String getCurrentPhase() {
         if (inFastRecovery) return "Fast Recovery";
         return (cwnd < ssthresh) ? "Slow Start" : "Congestion Avoidance";
     }
     
-    /**
-     * Initialize CSV file with headers
-     */
+    
     private void initializeCSVFile() {
         try (PrintWriter writer = new PrintWriter(new FileWriter(csvFilename))) {
             writer.println("Round,CWND,SSThresh,Phase,Event,FastRecovery,DupACKs");
-            System.out.println("📁 Initialized CSV file: " + csvFilename);
+            System.out.println(" Initialized CSV file: " + csvFilename);
         } catch (IOException e) {
             System.err.println("Error initializing CSV file: " + e.getMessage());
         }
     }
     
-    /**
-     * Record history and auto-save to CSV at each round
-     */
+    
     private void recordHistory(String phase, String event) {
         // Add to memory lists
         rounds.add(roundNum);
@@ -219,12 +203,10 @@ public class Reno {
         // Auto-save to CSV file immediately
         appendToCSV(roundNum, cwnd, ssthresh, phase, event, inFastRecovery, duplicateAckCount);
         
-        System.out.println("💾 Round " + roundNum + " data saved to " + csvFilename);
+        System.out.println("Round " + roundNum + " data saved to " + csvFilename);
     }
     
-    /**
-     * Append single round data to CSV file
-     */
+   
     private void appendToCSV(int round, int cwnd, int ssthresh, String phase, String event, boolean fastRecovery, int dupAcks) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(csvFilename, true))) {
             writer.printf("%d,%d,%d,%s,%s,%s,%d%n", round, cwnd, ssthresh, phase, event, fastRecovery, dupAcks);
@@ -233,9 +215,7 @@ public class Reno {
         }
     }
     
-    /**
-     * Export simulation data to CSV format (for manual export)
-     */
+    
     public String exportToCSV() {
         StringBuilder csv = new StringBuilder();
         csv.append("Round,CWND,SSThresh,Phase,Event,FastRecovery,DupACKs\n");
@@ -256,21 +236,17 @@ public class Reno {
         return csv.toString();
     }
     
-    /**
-     * Write complete simulation data to a different CSV file (manual export)
-     */
+    
     public void writeToCSV(String filename) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
             writer.print(exportToCSV());
-            System.out.println("📁 Complete TCP Reno data written to " + filename);
+            System.out.println("Complete TCP Reno data written to " + filename);
         } catch (IOException e) {
             System.err.println("Error writing CSV file: " + e.getMessage());
         }
     }
     
-    /**
-     * Get statistics about the current session
-     */
+    
     public void printStatistics() {
         if (rounds.isEmpty()) {
             System.out.println("No data to analyze yet.");
@@ -287,7 +263,7 @@ public class Reno {
         long packetLossEvents = events.stream().mapToLong(e -> e.contains("Timeout") || e.contains("Triple Dup ACK") ? 1 : 0).sum();
         
         System.out.println("\n" + "=".repeat(50));
-        System.out.println("📊 TCP RENO STATISTICS");
+        System.out.println("TCP RENO STATISTICS");
         System.out.println("=".repeat(50));
         System.out.println("Total Rounds: " + rounds.size());
         System.out.println("Max CWND: " + maxCwnd);
@@ -300,38 +276,5 @@ public class Reno {
         System.out.println("=".repeat(50));
     }
     
-    /**
-     * Example usage and testing
-     */
-    public static void main(String[] args) {
-        // Create TCP Reno instance with custom CSV filename
-        Reno tcp = new Reno(16, "tcp_reno_simulation.csv");
-        
-        System.out.println("🚀 Starting TCP Reno simulation with auto-save...\n");
-        
-        // Simulate some ACKs
-        for (int i = 1; i <= 8; i++) {
-            tcp.onAck(i, true);
-        }
-        
-        // Simulate duplicate ACKs leading to fast recovery
-        tcp.onAck(8, false); // dup 1
-        tcp.onAck(8, false); // dup 2
-        tcp.onAck(8, false); // dup 3 - triggers fast recovery
-        tcp.onAck(8, false); // additional dup during fast recovery
-        
-        // Recovery
-        tcp.onAck(9, true); // exits fast recovery
-        
-        // More normal ACKs
-        for (int i = 10; i <= 12; i++) {
-            tcp.onAck(i, true);
-        }
-        
-        // Timeout
-        tcp.onTimeout();
-        
-        // Final statistics
-        tcp.printStatistics();
+    
     }
-}

@@ -115,61 +115,7 @@ def plot_tcp_tahoe_from_data():
             new_ssthresh = cwnd_data.iloc[loss_idx]['SSThresh']
             print(f"  Round {loss_round}: CWND {prev_cwnd:.1f} → 1.0, SSThresh → {new_ssthresh:.1f}")
 
-def compare_phases():
-    """
-    Create a detailed comparison of TCP Tahoe phases
-    """
-    if not os.path.exists('tcp_tahoe_simulation.csv'):
-        print("tcp_tahoe_simulation.csv not found.")
-        return
-        
-    cwnd_data = pd.read_csv('tcp_tahoe_simulation.csv')
-    
-    plt.figure(figsize=(15, 10))
-    
-    # Create subplots
-    plt.subplot(2, 2, 1)
-    # Slow Start phases only
-    slow_start_data = cwnd_data[cwnd_data['Phase'] == 'Slow Start']
-    plt.plot(slow_start_data['Round'], slow_start_data['CWND'], 'o-', color='#E74C3C', markersize=4)
-    plt.title('Slow Start Phases', fontweight='bold')
-    plt.xlabel('Round')
-    plt.ylabel('CWND')
-    plt.grid(True, alpha=0.3)
-    
-    plt.subplot(2, 2, 2)
-    # Congestion Avoidance phases only
-    ca_data = cwnd_data[cwnd_data['Phase'] == 'Congestion Avoidance']
-    plt.plot(ca_data['Round'], ca_data['CWND'], 's-', color='#3498DB', markersize=4)
-    plt.title('Congestion Avoidance Phases', fontweight='bold')
-    plt.xlabel('Round')
-    plt.ylabel('CWND')
-    plt.grid(True, alpha=0.3)
-    
-    plt.subplot(2, 2, 3)
-    # CWND vs SSThresh
-    plt.plot(cwnd_data['Round'], cwnd_data['CWND'], label='CWND', linewidth=2)
-    plt.plot(cwnd_data['Round'], cwnd_data['SSThresh'], label='SSThresh', linewidth=2, linestyle='--')
-    plt.title('CWND vs SSThresh Evolution', fontweight='bold')
-    plt.xlabel('Round')
-    plt.ylabel('Value')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    
-    plt.subplot(2, 2, 4)
-    # Growth rate analysis
-    cwnd_data['Growth_Rate'] = cwnd_data['CWND'].diff()
-    valid_growth = cwnd_data[cwnd_data['Growth_Rate'] > 0]  # Only positive growth
-    plt.scatter(valid_growth['Round'], valid_growth['Growth_Rate'], 
-               c=['red' if phase == 'Slow Start' else 'blue' for phase in valid_growth['Phase']], alpha=0.6)
-    plt.title('CWND Growth Rate by Phase', fontweight='bold')
-    plt.xlabel('Round')
-    plt.ylabel('CWND Growth Rate')
-    plt.grid(True, alpha=0.3)
-    
-    plt.tight_layout()
-    plt.savefig('tcp_tahoe_detailed_analysis.png', dpi=300, bbox_inches='tight')
-    plt.show()
+
 
 if __name__ == "__main__":
     print("TCP Tahoe Visualization Tool")
@@ -181,10 +127,9 @@ if __name__ == "__main__":
     print("\n" + "=" * 40)
     
     # Detailed analysis
-    print("Generating detailed phase analysis...")
-    compare_phases()
+   
     
     print("\nVisualization complete!")
     print("Generated files:")
     print("  - tcp_tahoe_behavior.png")
-    print("  - tcp_tahoe_detailed_analysis.png")
+  

@@ -68,12 +68,12 @@ public class ClientSide {
         @Override
         public void writeToCSV(String filename) {
             // Reno doesn't have built-in CSV export, so we'll create a simple one
-            System.out.println("📁 TCP Reno CSV export not implemented in original - data saved in separate files");
+            System.out.println("TCP Reno CSV export not implemented in original - data saved in separate files");
         }
 
         @Override
         public void printStatistics() {
-            System.out.println("📊 TCP Reno final state: " + getCurrentState());
+            System.out.println("TCP Reno final state: " + getCurrentState());
         }
     }
 
@@ -307,10 +307,10 @@ public class ClientSide {
                     try {
                         int finalAck = input.readInt();
                         if (finalAck == -1) {
-                            System.out.println("✅ Server acknowledged end of transmission");
+                            System.out.println("Server acknowledged end of transmission");
                         }
                     } catch (SocketTimeoutException e) {
-                        System.out.println("⚠️ Timeout waiting for final ACK - assuming transmission complete");
+                        System.out.println("Timeout waiting for final ACK - assuming transmission complete");
                     }
 
                     // Save detailed data based on algorithm
@@ -322,7 +322,7 @@ public class ClientSide {
                     congestionControl.writeToCSV(algorithmPrefix + "_detailed_data.csv");
                     
                     System.out.println("\n" + "=".repeat(60));
-                    System.out.println("📊 TRANSMISSION COMPLETE");
+                    System.out.println("TRANSMISSION COMPLETE");
                     System.out.println("Algorithm: " + congestionControl.getAlgorithmName());
                     System.out.println("Total bytes sent: " + totalBytesSent);
                     System.out.println("Total rounds: " + (round - 1));
@@ -346,7 +346,7 @@ public class ClientSide {
     private static CongestionControl chooseCongestionControlAlgorithm(Scanner scanner) {
         while (true) {
             System.out.println("\n" + "=".repeat(50));
-            System.out.println("🔧 CHOOSE CONGESTION CONTROL ALGORITHM");
+            System.out.println("CHOOSE CONGESTION CONTROL ALGORITHM");
             System.out.println("=".repeat(50));
             System.out.println("1. TCP Tahoe (Simple, no fast recovery)");
             System.out.println("2. TCP Reno (Fast retransmit & fast recovery)");
@@ -356,13 +356,13 @@ public class ClientSide {
             
             switch (choice) {
                 case "1":
-                    System.out.println("✅ Selected: TCP Tahoe");
+                    System.out.println("Selected: TCP Tahoe");
                     return new TahoeWrapper(8); // Initial ssthresh of 8
                 case "2":
-                    System.out.println("✅ Selected: TCP Reno");
+                    System.out.println("Selected: TCP Reno");
                     return new RenoWrapper(8); // Initial ssthresh of 8
                 default:
-                    System.out.println("❌ Invalid choice. Please enter 1 or 2.");
+                    System.out.println("Invalid choice. Please enter 1 or 2.");
                     break;
             }
         }
@@ -378,7 +378,7 @@ public class ClientSide {
                 writer.printf("%d,%d,%.2f,%d\n", i + 1, sampleRTTs.get(i), 
                              estimatedRTTs.get(i), timeoutHistory.get(i));
             }
-            System.out.println("📁 RTT data saved to " + algorithmPrefix + "_rtt_data.csv");
+            System.out.println("RTT data saved to " + algorithmPrefix + "_rtt_data.csv");
         } catch (IOException e) {
             System.out.println("Error saving RTT data: " + e.getMessage());
         }
@@ -389,7 +389,7 @@ public class ClientSide {
             for (int i = 0; i < cwndPerRound.size(); i++) {
                 cwndWriter.printf("%d,%d\n", i + 1, cwndPerRound.get(i));
             }
-            System.out.println("📁 CWND data saved to " + algorithmPrefix + "_cwnd_data.csv");
+            System.out.println("CWND data saved to " + algorithmPrefix + "_cwnd_data.csv");
         } catch (IOException e) {
             System.out.println("Error saving CWND data: " + e.getMessage());
         }
@@ -401,7 +401,7 @@ public class ClientSide {
             for (String event : eventLog) {
                 eventWriter.println(event);
             }
-            System.out.println("📁 Event log saved to " + algorithmPrefix + "_events.log");
+            System.out.println("Event log saved to " + algorithmPrefix + "_events.log");
         } catch (IOException e) {
             System.out.println("Error saving event log: " + e.getMessage());
         }

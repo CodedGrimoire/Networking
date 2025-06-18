@@ -47,18 +47,12 @@ public class TCPTahoe {
         return (int) Math.ceil(ssthresh);
     }
     
-    /**
-     * Set the CSV filename for auto-saving
-     */
+    
     public void setCSVFilename(String filename) {
         this.csvFilename = filename;
     }
 
-    /**
-     * Handle ACK reception - TCP Tahoe style
-     * @param ackNumber The ACK number received
-     * @param isNewAck Whether this is a new ACK (advancing the window) or duplicate
-     */
+   
     public void onAck(int ackNumber, boolean isNewAck) {
         if (isNewAck) {
             // New ACK received - normal operation
@@ -77,14 +71,14 @@ public class TCPTahoe {
                 // Congestion Avoidance: Linear growth (add 1 every RTT)
                 cwnd += 1.0;
                 phase = "Congestion Avoidance";
-                System.out.println("📊 Congestion Avoidance: cwnd -> " + getCwnd());
+                System.out.println("Congestion Avoidance: cwnd -> " + getCwnd());
             }
             
             // Record history and auto-save to CSV
             recordHistory(phase, event);
         } else {
             // Duplicate ACK received - TCP Tahoe treats any loss as congestion
-            System.out.println("⚠️ Duplicate ACK received for seq: " + ackNumber);
+            System.out.println("Duplicate ACK received for seq: " + ackNumber);
         }
     }
 
@@ -92,7 +86,7 @@ public class TCPTahoe {
      * Handle timeout - TCP Tahoe response to packet loss
      */
     public void onTimeout() {
-        System.out.println("⏰ Timeout occurred — TCP Tahoe congestion response.");
+        System.out.println(" Timeout occurred — TCP Tahoe congestion response.");
         roundNum++;
         
         // TCP Tahoe packet loss handling:
@@ -111,7 +105,7 @@ public class TCPTahoe {
      * Handle triple duplicate ACKs - TCP Tahoe treats this as packet loss
      */
     public void onTripleDupAck() {
-        System.out.println("🚨 Triple duplicate ACKs — TCP Tahoe treats as packet loss.");
+        System.out.println(" Triple duplicate ACKs — TCP Tahoe treats as packet loss.");
         roundNum++;
         
         // TCP Tahoe response: same as timeout (no fast recovery)
@@ -140,7 +134,7 @@ public class TCPTahoe {
         phases.clear();
         events.clear();
         
-        System.out.println("🔄 TCP Tahoe reset: cwnd=1, ssthresh=" + getSsthresh());
+        System.out.println(" TCP Tahoe reset: cwnd=1, ssthresh=" + getSsthresh());
         
         // Reinitialize CSV file
         initializeCSVFile();
@@ -168,7 +162,7 @@ public class TCPTahoe {
     private void initializeCSVFile() {
         try (PrintWriter writer = new PrintWriter(new FileWriter(csvFilename))) {
             writer.println("Round,CWND,SSThresh,Phase,Event");
-            System.out.println("📁 Initialized CSV file: " + csvFilename);
+            System.out.println("Initialized CSV file: " + csvFilename);
         } catch (IOException e) {
             System.err.println("Error initializing CSV file: " + e.getMessage());
         }
@@ -188,12 +182,9 @@ public class TCPTahoe {
         // Auto-save to CSV file immediately
         appendToCSV(roundNum, cwnd, ssthresh, phase, event);
         
-        System.out.println("💾 Round " + roundNum + " data saved to " + csvFilename);
+        System.out.println("Round " + roundNum + " data saved to " + csvFilename);
     }
     
-    /**
-     * Append single round data to CSV file
-     */
     private void appendToCSV(int round, double cwnd, double ssthresh, String phase, String event) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(csvFilename, true))) {
             writer.printf("%d,%.1f,%.1f,%s,%s%n", round, cwnd, ssthresh, phase, event);
@@ -227,7 +218,7 @@ public class TCPTahoe {
     public void writeToCSV(String filename) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
             writer.print(exportToCSV());
-            System.out.println("📁 Complete TCP Tahoe data written to " + filename);
+            System.out.println("Complete TCP Tahoe data written to " + filename);
         } catch (IOException e) {
             System.err.println("Error writing CSV file: " + e.getMessage());
         }
@@ -251,7 +242,7 @@ public class TCPTahoe {
         long packetLossEvents = events.stream().mapToLong(e -> e.contains("Loss") || e.contains("Dup ACK") ? 1 : 0).sum();
         
         System.out.println("\n" + "=".repeat(50));
-        System.out.println("📊 TCP TAHOE STATISTICS");
+        System.out.println(" TCP TAHOE STATISTICS");
         System.out.println("=".repeat(50));
         System.out.println("Total Rounds: " + rounds.size());
         System.out.println("Max CWND: " + (int)maxCwnd);
