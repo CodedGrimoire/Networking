@@ -1,5 +1,5 @@
 // ============================
-// ✅ ClientSide.java (TCP Reno Fixed)
+// ✅ ClientSide.java (TCP Tahoe + Reno Selection)
 // ============================
 import java.io.*;
 import java.net.*;
@@ -9,16 +9,142 @@ public class ClientSide {
     private static final String SERVER_ADDRESS = "localhost";
     private static final int SERVER_PORT = 3002;
 
+    // Common interface for congestion control algorithms
+    interface CongestionControl {
+        void onAck(int ackNumber, boolean isNewAck);
+        void onTimeout();
+        void reset();
+        int getCwnd();
+        int getSsthresh();
+        String getCurrentState();
+        String getAlgorithmName();
+        void writeToCSV(String filename);
+        void printStatistics();
+    }
+
+    // Wrapper for Reno to implement the interface
+    static class RenoWrapper implements CongestionControl {
+        private Reno reno;
+
+        public RenoWrapper(int initialSsthresh) {
+            this.reno = new Reno(initialSsthresh);
+        }
+
+        @Override
+        public void onAck(int ackNumber, boolean isNewAck) {
+            reno.onAck(ackNumber, isNewAck);
+        }
+
+        @Override
+        public void onTimeout() {
+            reno.onTimeout();
+        }
+
+        @Override
+        public void reset() {
+            reno.reset();
+        }
+
+        @Override
+        public int getCwnd() {
+            return reno.getCwnd();
+        }
+
+        @Override
+        public int getSsthresh() {
+            return reno.getSsthresh();
+        }
+
+        @Override
+        public String getCurrentState() {
+            return reno.getCurrentState();
+        }
+
+        @Override
+        public String getAlgorithmName() {
+            return "TCP Reno";
+        }
+
+        @Override
+        public void writeToCSV(String filename) {
+            // Reno doesn't have built-in CSV export, so we'll create a simple one
+            System.out.println("📁 TCP Reno CSV export not implemented in original - data saved in separate files");
+        }
+
+        @Override
+        public void printStatistics() {
+            System.out.println("📊 TCP Reno final state: " + getCurrentState());
+        }
+    }
+
+    // Wrapper for Tahoe to implement the interface
+    static class TahoeWrapper implements CongestionControl {
+        private TCPTahoe tahoe;
+
+        public TahoeWrapper(int initialSsthresh) {
+            this.tahoe = new TCPTahoe(initialSsthresh);
+        }
+
+        @Override
+        public void onAck(int ackNumber, boolean isNewAck) {
+            tahoe.onAck(ackNumber, isNewAck);
+        }
+
+        @Override
+        public void onTimeout() {
+            tahoe.onTimeout();
+        }
+
+        @Override
+        public void reset() {
+            tahoe.reset();
+        }
+
+        @Override
+        public int getCwnd() {
+            return tahoe.getCwnd();
+        }
+
+        @Override
+        public int getSsthresh() {
+            return tahoe.getSsthresh();
+        }
+
+        @Override
+        public String getCurrentState() {
+            return tahoe.getCurrentState();
+        }
+
+        @Override
+        public String getAlgorithmName() {
+            return "TCP Tahoe";
+        }
+
+        @Override
+        public void writeToCSV(String filename) {
+            tahoe.writeToCSV(filename);
+        }
+
+        @Override
+        public void printStatistics() {
+            tahoe.printStatistics();
+        }
+    }
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         boolean continueRunning = true;
         String initialFileName = args.length > 0 ? args[0] : null;
+
+        // Choose congestion control algorithm
+        CongestionControl congestionControl = chooseCongestionControlAlgorithm(scanner);
 
         try (Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
              DataInputStream input = new DataInputStream(socket.getInputStream());
              DataOutputStream output = new DataOutputStream(socket.getOutputStream())) {
 
             System.out.println("Connected to server at " + SERVER_ADDRESS + ":" + SERVER_PORT);
+            System.out.println("Using: " + congestionControl.getAlgorithmName());
 
             double alpha = 0.125;
             double beta = 0.25;
@@ -38,7 +164,6 @@ public class ClientSide {
             List<Integer> cwndPerRound = new ArrayList<>();
             List<String> eventLog = new ArrayList<>();
 
-            Reno reno = new Reno(8); // Start with ssthresh of 8
             int round = 1;
 
             while (continueRunning) {
@@ -48,7 +173,7 @@ public class ClientSide {
                     fileName = initialFileName;
                     initialFileName = null;
                 } else {
-                    System.out.print("\nEnter file name to send (or 'exit' to quit): ");
+                    System.out.print("\nEnter file name to send (or 'exit' to quit, 'switch' to change algorithm): ");
                     fileName = scanner.nextLine().trim();
                 }
 
@@ -57,6 +182,10 @@ public class ClientSide {
                     output.flush();
                     System.out.println("Exiting client...");
                     break;
+                } else if (fileName.equalsIgnoreCase("switch")) {
+                    congestionControl = chooseCongestionControlAlgorithm(scanner);
+                    System.out.println("Switched to: " + congestionControl.getAlgorithmName());
+                    continue;
                 }
 
                 File file = new File(fileName);
@@ -66,15 +195,16 @@ public class ClientSide {
                 }
 
                 System.out.println("\nSending file: " + fileName);
-                System.out.println("=".repeat(50));
+                System.out.println("Using algorithm: " + congestionControl.getAlgorithmName());
+                System.out.println("=".repeat(60));
                 output.writeUTF(file.getName());
                 output.flush();
 
                 int serverWindowSize = input.readInt();
                 System.out.println("Server window size: " + serverWindowSize + " bytes");
 
-                // Reset Reno for new file transfer
-                reno.reset();
+                // Reset congestion control for new file transfer
+                congestionControl.reset();
 
                 try (FileInputStream fileInput = new FileInputStream(file)) {
                     byte[] buffer = new byte[serverWindowSize];
@@ -108,10 +238,10 @@ public class ClientSide {
                                 long ackTime = System.currentTimeMillis();
                                 long sampleRTT = ackTime - sendTime;
 
-                                // Process the ACK with TCP Reno logic
+                                // Process the ACK with the selected congestion control algorithm
                                 if (ack == sequenceNumber) {
                                     // Expected ACK received - packet acknowledged
-                                    reno.onAck(ack, true); // New ACK
+                                    congestionControl.onAck(ack, true); // New ACK
                                     
                                     // Update RTT estimates
                                     estimatedRTT = (1 - alpha) * estimatedRTT + alpha * sampleRTT;
@@ -130,30 +260,38 @@ public class ClientSide {
                                     consecutiveDupAcks = 0;
 
                                     // Record CWND for this round
-                                    cwndPerRound.add(reno.getCwnd());
+                                    cwndPerRound.add(congestionControl.getCwnd());
                                     round++;
 
                                 } else if (ack == lastAckReceived) {
                                     // Duplicate ACK
                                     consecutiveDupAcks++;
-                                    reno.onAck(ack, false); // Duplicate ACK
+                                    congestionControl.onAck(ack, false); // Duplicate ACK
                                     
                                     if (consecutiveDupAcks == 3) {
+                                        // Triple duplicate ACK handling
+                                        if (congestionControl instanceof TahoeWrapper) {
+                                            // TCP Tahoe treats triple dup ACK as packet loss
+                                            ((TahoeWrapper) congestionControl).tahoe.onTripleDupAck();
+                                        }
+                                        // For Reno, the onAck(false) call already handles this
                                         isRetransmission = true;
+                                        eventLog.add("Round " + round + ": TRIPLE DUP ACK seq " + sequenceNumber + 
+                                                   ", CWND=" + congestionControl.getCwnd());
                                     }
                                     
                                 } else {
                                     // Unexpected ACK
-                                    reno.onAck(ack, true);
+                                    congestionControl.onAck(ack, true);
                                 }
 
                             } catch (SocketTimeoutException e) {
-                                reno.onTimeout();
+                                congestionControl.onTimeout();
                                 isRetransmission = true;
-                                consecutiveDupAcks = 0;;
                                 consecutiveDupAcks = 0;
                                 
-                                eventLog.add("Round " + round + ": TIMEOUT seq " + sequenceNumber + ", CWND=" + reno.getCwnd());
+                                eventLog.add("Round " + round + ": TIMEOUT seq " + sequenceNumber + 
+                                           ", CWND=" + congestionControl.getCwnd());
                                 // Continue the loop to resend the packet
                             }
                         }
@@ -175,16 +313,26 @@ public class ClientSide {
                         System.out.println("⚠️ Timeout waiting for final ACK - assuming transmission complete");
                     }
 
-                    // Save detailed data
-                    saveTransmissionData(sampleRTTs, estimatedRTTs, timeoutHistory, cwndPerRound, eventLog);
+                    // Save detailed data based on algorithm
+                    String algorithmPrefix = congestionControl.getAlgorithmName().toLowerCase().replace(" ", "_");
+                    saveTransmissionData(sampleRTTs, estimatedRTTs, timeoutHistory, cwndPerRound, 
+                                       eventLog, algorithmPrefix);
                     
-                    System.out.println("\n" + "=".repeat(50));
+                    // Save algorithm-specific data
+                    congestionControl.writeToCSV(algorithmPrefix + "_detailed_data.csv");
+                    
+                    System.out.println("\n" + "=".repeat(60));
                     System.out.println("📊 TRANSMISSION COMPLETE");
+                    System.out.println("Algorithm: " + congestionControl.getAlgorithmName());
                     System.out.println("Total bytes sent: " + totalBytesSent);
                     System.out.println("Total rounds: " + (round - 1));
-                    System.out.println("Final CWND: " + reno.getCwnd());
-                    System.out.println("Final SSThresh: " + reno.getSsthresh());
-                    System.out.println("=".repeat(50));
+                    System.out.println("Final CWND: " + congestionControl.getCwnd());
+                    System.out.println("Final SSThresh: " + congestionControl.getSsthresh());
+                    
+                    // Print algorithm-specific statistics
+                    congestionControl.printStatistics();
+                    
+                    System.out.println("=".repeat(60));
                 }
             }
 
@@ -195,40 +343,65 @@ public class ClientSide {
         scanner.close();
     }
 
+    private static CongestionControl chooseCongestionControlAlgorithm(Scanner scanner) {
+        while (true) {
+            System.out.println("\n" + "=".repeat(50));
+            System.out.println("🔧 CHOOSE CONGESTION CONTROL ALGORITHM");
+            System.out.println("=".repeat(50));
+            System.out.println("1. TCP Tahoe (Simple, no fast recovery)");
+            System.out.println("2. TCP Reno (Fast retransmit & fast recovery)");
+            System.out.print("Enter your choice (1 or 2): ");
+            
+            String choice = scanner.nextLine().trim();
+            
+            switch (choice) {
+                case "1":
+                    System.out.println("✅ Selected: TCP Tahoe");
+                    return new TahoeWrapper(8); // Initial ssthresh of 8
+                case "2":
+                    System.out.println("✅ Selected: TCP Reno");
+                    return new RenoWrapper(8); // Initial ssthresh of 8
+                default:
+                    System.out.println("❌ Invalid choice. Please enter 1 or 2.");
+                    break;
+            }
+        }
+    }
+
     private static void saveTransmissionData(List<Long> sampleRTTs, List<Double> estimatedRTTs, 
                                            List<Integer> timeoutHistory, List<Integer> cwndPerRound,
-                                           List<String> eventLog) {
+                                           List<String> eventLog, String algorithmPrefix) {
         // Save RTT data
-        try (PrintWriter writer = new PrintWriter(new File("rtt_data.csv"))) {
+        try (PrintWriter writer = new PrintWriter(new File(algorithmPrefix + "_rtt_data.csv"))) {
             writer.println("TimeIndex,SampleRTT,EstimatedRTT,TimeoutInterval");
             for (int i = 0; i < sampleRTTs.size(); i++) {
                 writer.printf("%d,%d,%.2f,%d\n", i + 1, sampleRTTs.get(i), 
                              estimatedRTTs.get(i), timeoutHistory.get(i));
             }
-            System.out.println("📁 RTT data saved to rtt_data.csv");
+            System.out.println("📁 RTT data saved to " + algorithmPrefix + "_rtt_data.csv");
         } catch (IOException e) {
             System.out.println("Error saving RTT data: " + e.getMessage());
         }
 
         // Save CWND data
-        try (PrintWriter cwndWriter = new PrintWriter(new File("cwnd_data.csv"))) {
+        try (PrintWriter cwndWriter = new PrintWriter(new File(algorithmPrefix + "_cwnd_data.csv"))) {
             cwndWriter.println("Round,CWND");
             for (int i = 0; i < cwndPerRound.size(); i++) {
                 cwndWriter.printf("%d,%d\n", i + 1, cwndPerRound.get(i));
             }
-            System.out.println("📁 CWND data saved to cwnd_data.csv");
+            System.out.println("📁 CWND data saved to " + algorithmPrefix + "_cwnd_data.csv");
         } catch (IOException e) {
             System.out.println("Error saving CWND data: " + e.getMessage());
         }
 
         // Save event log
-        try (PrintWriter eventWriter = new PrintWriter(new File("tcp_events.log"))) {
-            eventWriter.println("TCP Reno Event Log");
-            eventWriter.println("==================");
+        try (PrintWriter eventWriter = new PrintWriter(new File(algorithmPrefix + "_events.log"))) {
+            eventWriter.println("TCP Event Log - " + algorithmPrefix.toUpperCase().replace("_", " "));
+            eventWriter.println("=".repeat(60));
             for (String event : eventLog) {
                 eventWriter.println(event);
             }
-            System.out.println("📁 Event log saved to tcp_events.log");
+            System.out.println("📁 Event log saved to " + algorithmPrefix + "_events.log");
         } catch (IOException e) {
             System.out.println("Error saving event log: " + e.getMessage());
         }
