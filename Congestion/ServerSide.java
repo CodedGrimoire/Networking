@@ -8,7 +8,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class ServerSide {
     private static final int PORT = 3002;
-    private static final int WINDOW_SIZE = 10;
+    private static final int WINDOW_SIZE = 200;
     private static final double PACKET_LOSS_PROBABILITY = 0.1;
     private static final double TRIPLE_DUP_ACK_PROBABILITY = 0.1;
 

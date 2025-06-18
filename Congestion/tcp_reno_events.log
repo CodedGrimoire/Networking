@@ -1,0 +1,7 @@
+TCP Event Log - TCP RENO
+============================================================
+Round 15: TIMEOUT seq 14, CWND=1
+Round 16: TIMEOUT seq 15, CWND=1
+Round 27: TIMEOUT seq 26, CWND=1
+Round 30: TIMEOUT seq 29, CWND=1
+Round 31: TRIPLE DUP ACK seq 30, CWND=4

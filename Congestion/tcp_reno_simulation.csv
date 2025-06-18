@@ -11,123 +11,33 @@ Round,CWND,SSThresh,Phase,Event,FastRecovery,DupACKs
 10,15,8,Congestion Avoidance,ACK Received,false,0
 11,16,8,Congestion Avoidance,ACK Received,false,0
 12,17,8,Congestion Avoidance,ACK Received,false,0
-13,1,8,Slow Start,Timeout,false,0
-14,2,8,Slow Start,ACK Received,false,0
-15,4,8,Slow Start,ACK Received,false,0
-16,8,8,Slow Start,ACK Received,false,0
-17,1,4,Slow Start,Timeout,false,0
-18,2,4,Slow Start,ACK Received,false,0
-19,4,4,Slow Start,ACK Received,false,0
-20,5,4,Congestion Avoidance,ACK Received,false,0
-21,6,4,Congestion Avoidance,ACK Received,false,0
-22,7,4,Congestion Avoidance,ACK Received,false,0
-23,8,4,Congestion Avoidance,ACK Received,false,0
-24,9,4,Congestion Avoidance,ACK Received,false,0
-25,10,4,Congestion Avoidance,ACK Received,false,0
-26,11,4,Congestion Avoidance,ACK Received,false,0
-27,12,4,Congestion Avoidance,ACK Received,false,0
-28,13,4,Congestion Avoidance,ACK Received,false,0
-29,9,6,Fast Recovery,Triple Dup ACK,true,3
-30,6,6,Congestion Avoidance,Exit Fast Recovery,false,0
-31,7,6,Congestion Avoidance,ACK Received,false,0
-32,8,6,Congestion Avoidance,ACK Received,false,0
-33,9,6,Congestion Avoidance,ACK Received,false,0
-34,7,4,Fast Recovery,Triple Dup ACK,true,3
-35,8,4,Fast Recovery,Additional Dup ACK,true,4
-36,9,4,Fast Recovery,Additional Dup ACK,true,5
-37,4,4,Congestion Avoidance,Exit Fast Recovery,false,0
-38,5,2,Fast Recovery,Triple Dup ACK,true,3
-39,6,2,Fast Recovery,Additional Dup ACK,true,4
-40,7,2,Fast Recovery,Additional Dup ACK,true,5
-41,2,2,Congestion Avoidance,Exit Fast Recovery,false,0
-42,4,1,Fast Recovery,Triple Dup ACK,true,3
-43,5,1,Fast Recovery,Additional Dup ACK,true,4
-44,6,1,Fast Recovery,Additional Dup ACK,true,5
-45,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
-46,4,1,Fast Recovery,Triple Dup ACK,true,3
-47,5,1,Fast Recovery,Additional Dup ACK,true,4
-48,6,1,Fast Recovery,Additional Dup ACK,true,5
-49,7,1,Fast Recovery,Additional Dup ACK,true,6
-50,8,1,Fast Recovery,Additional Dup ACK,true,7
-51,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
-52,4,1,Fast Recovery,Triple Dup ACK,true,3
-53,5,1,Fast Recovery,Additional Dup ACK,true,4
-54,6,1,Fast Recovery,Additional Dup ACK,true,5
-55,7,1,Fast Recovery,Additional Dup ACK,true,6
-56,8,1,Fast Recovery,Additional Dup ACK,true,7
-57,9,1,Fast Recovery,Additional Dup ACK,true,8
-58,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
-59,4,1,Fast Recovery,Triple Dup ACK,true,3
-60,5,1,Fast Recovery,Additional Dup ACK,true,4
-61,6,1,Fast Recovery,Additional Dup ACK,true,5
-62,7,1,Fast Recovery,Additional Dup ACK,true,6
-63,8,1,Fast Recovery,Additional Dup ACK,true,7
-64,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
-65,4,1,Fast Recovery,Triple Dup ACK,true,3
-66,5,1,Fast Recovery,Additional Dup ACK,true,4
-67,6,1,Fast Recovery,Additional Dup ACK,true,5
-68,7,1,Fast Recovery,Additional Dup ACK,true,6
-69,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
-70,4,1,Fast Recovery,Triple Dup ACK,true,3
-71,5,1,Fast Recovery,Additional Dup ACK,true,4
-72,6,1,Fast Recovery,Additional Dup ACK,true,5
-73,7,1,Fast Recovery,Additional Dup ACK,true,6
-74,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
-75,4,1,Fast Recovery,Triple Dup ACK,true,3
-76,5,1,Fast Recovery,Additional Dup ACK,true,4
-77,6,1,Fast Recovery,Additional Dup ACK,true,5
-78,7,1,Fast Recovery,Additional Dup ACK,true,6
-79,8,1,Fast Recovery,Additional Dup ACK,true,7
-80,9,1,Fast Recovery,Additional Dup ACK,true,8
-81,10,1,Fast Recovery,Additional Dup ACK,true,9
-82,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
-83,4,1,Fast Recovery,Triple Dup ACK,true,3
-84,5,1,Fast Recovery,Additional Dup ACK,true,4
-85,6,1,Fast Recovery,Additional Dup ACK,true,5
-86,7,1,Fast Recovery,Additional Dup ACK,true,6
-87,8,1,Fast Recovery,Additional Dup ACK,true,7
-88,9,1,Fast Recovery,Additional Dup ACK,true,8
-89,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
-90,4,1,Fast Recovery,Triple Dup ACK,true,3
-91,5,1,Fast Recovery,Additional Dup ACK,true,4
-92,6,1,Fast Recovery,Additional Dup ACK,true,5
-93,7,1,Fast Recovery,Additional Dup ACK,true,6
-94,8,1,Fast Recovery,Additional Dup ACK,true,7
-95,9,1,Fast Recovery,Additional Dup ACK,true,8
-96,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
-97,4,1,Fast Recovery,Triple Dup ACK,true,3
-98,5,1,Fast Recovery,Additional Dup ACK,true,4
-99,6,1,Fast Recovery,Additional Dup ACK,true,5
-100,7,1,Fast Recovery,Additional Dup ACK,true,6
-101,8,1,Fast Recovery,Additional Dup ACK,true,7
-102,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
-103,4,1,Fast Recovery,Triple Dup ACK,true,3
-104,5,1,Fast Recovery,Additional Dup ACK,true,4
-105,6,1,Fast Recovery,Additional Dup ACK,true,5
-106,7,1,Fast Recovery,Additional Dup ACK,true,6
-107,8,1,Fast Recovery,Additional Dup ACK,true,7
-108,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
-109,4,1,Fast Recovery,Triple Dup ACK,true,3
-110,5,1,Fast Recovery,Additional Dup ACK,true,4
-111,6,1,Fast Recovery,Additional Dup ACK,true,5
-112,7,1,Fast Recovery,Additional Dup ACK,true,6
-113,8,1,Fast Recovery,Additional Dup ACK,true,7
-114,9,1,Fast Recovery,Additional Dup ACK,true,8
-115,10,1,Fast Recovery,Additional Dup ACK,true,9
-116,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
-117,4,1,Fast Recovery,Triple Dup ACK,true,3
-118,5,1,Fast Recovery,Additional Dup ACK,true,4
-119,6,1,Fast Recovery,Additional Dup ACK,true,5
-120,7,1,Fast Recovery,Additional Dup ACK,true,6
-121,8,1,Fast Recovery,Additional Dup ACK,true,7
-122,9,1,Fast Recovery,Additional Dup ACK,true,8
-123,10,1,Fast Recovery,Additional Dup ACK,true,9
-124,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
-125,4,1,Fast Recovery,Triple Dup ACK,true,3
-126,5,1,Fast Recovery,Additional Dup ACK,true,4
-127,6,1,Fast Recovery,Additional Dup ACK,true,5
-128,7,1,Fast Recovery,Additional Dup ACK,true,6
-129,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
-130,4,1,Fast Recovery,Triple Dup ACK,true,3
-131,5,1,Fast Recovery,Additional Dup ACK,true,4
-132,6,1,Fast Recovery,Additional Dup ACK,true,5
+13,18,8,Congestion Avoidance,ACK Received,false,0
+14,19,8,Congestion Avoidance,ACK Received,false,0
+15,1,9,Slow Start,Timeout,false,0
+16,2,9,Slow Start,ACK Received,false,0
+17,1,1,Slow Start,Timeout,false,0
+18,2,1,Congestion Avoidance,ACK Received,false,0
+19,3,1,Congestion Avoidance,ACK Received,false,0
+20,4,1,Congestion Avoidance,ACK Received,false,0
+21,5,1,Congestion Avoidance,ACK Received,false,0
+22,6,1,Congestion Avoidance,ACK Received,false,0
+23,7,1,Congestion Avoidance,ACK Received,false,0
+24,8,1,Congestion Avoidance,ACK Received,false,0
+25,9,1,Congestion Avoidance,ACK Received,false,0
+26,10,1,Congestion Avoidance,ACK Received,false,0
+27,11,1,Congestion Avoidance,ACK Received,false,0
+28,12,1,Congestion Avoidance,ACK Received,false,0
+29,1,6,Slow Start,Timeout,false,0
+30,2,6,Slow Start,ACK Received,false,0
+31,4,6,Slow Start,ACK Received,false,0
+32,8,6,Slow Start,ACK Received,false,0
+33,1,4,Slow Start,Timeout,false,0
+34,2,4,Slow Start,ACK Received,false,0
+35,4,1,Fast Recovery,Triple Dup ACK,true,3
+36,1,1,Congestion Avoidance,Exit Fast Recovery,false,0
+37,2,1,Congestion Avoidance,ACK Received,false,0
+38,3,1,Congestion Avoidance,ACK Received,false,0
+39,4,1,Congestion Avoidance,ACK Received,false,0
+40,5,1,Congestion Avoidance,ACK Received,false,0
+41,6,1,Congestion Avoidance,ACK Received,false,0
+42,7,1,Congestion Avoidance,ACK Received,false,0
