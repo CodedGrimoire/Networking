@@ -49,9 +49,38 @@ def plot_tcp_reno_from_data():
         'Fast Recovery': '#F39C12'
     }
     
-    # Plot main line
+    # Plot main CWND line
     plt.plot(cwnd_data['Round'], cwnd_data['CWND'],
-             linewidth=2, color='#2C3E50', alpha=0.8)
+             linewidth=2, color='#2C3E50', alpha=0.8, label='CWND')
+    
+    # Plot ssthresh if available in the data
+    if 'ssthresh' in cwnd_data.columns or 'SSThresh' in cwnd_data.columns:
+        # Handle different possible column names
+        ssthresh_col = 'ssthresh' if 'ssthresh' in cwnd_data.columns else 'SSThresh'
+        plt.plot(cwnd_data['Round'], cwnd_data[ssthresh_col],
+                 linewidth=2, color='#8E44AD', linestyle='--', 
+                 alpha=0.8, label='SSThresh')
+        print(f"Plotting ssthresh from column: {ssthresh_col}")
+    else:
+        # If ssthresh is not in the data, estimate it based on CWND drops
+        print("SSThresh column not found. Estimating based on CWND behavior...")
+        estimated_ssthresh = []
+        current_ssthresh = 16  # Default initial ssthresh
+        
+        for i in range(len(cwnd_data)):
+            if i > 0:
+                prev_cwnd = cwnd_data.iloc[i-1]['CWND']
+                current_cwnd = cwnd_data.iloc[i]['CWND']
+                
+                # When CWND drops significantly, update ssthresh
+                if current_cwnd < prev_cwnd * 0.7:
+                    current_ssthresh = max(prev_cwnd // 2, 1)
+            
+            estimated_ssthresh.append(current_ssthresh)
+        
+        plt.plot(cwnd_data['Round'], estimated_ssthresh,
+                 linewidth=2, color='#8E44AD', linestyle='--', 
+                 alpha=0.8, label='SSThresh (estimated)')
     
     # Color-code different phases
     for phase, color in colors.items():
@@ -68,7 +97,11 @@ def plot_tcp_reno_from_data():
     
     # Set limits
     plt.xlim(0, max(cwnd_data['Round']) + 1)
-    plt.ylim(0, max(cwnd_data['CWND']) + 2)
+    max_y = max(cwnd_data['CWND']) + 2
+    if 'ssthresh' in cwnd_data.columns or 'SSThresh' in cwnd_data.columns:
+        ssthresh_col = 'ssthresh' if 'ssthresh' in cwnd_data.columns else 'SSThresh'
+        max_y = max(max_y, max(cwnd_data[ssthresh_col]) + 2)
+    plt.ylim(0, max_y)
     
     plt.tight_layout()
     plt.savefig('tcp_reno_behavior.png', dpi=300, bbox_inches='tight')
