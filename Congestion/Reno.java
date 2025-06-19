@@ -74,7 +74,7 @@ public class Reno {
                     // Triple duplicate ACK - trigger fast retransmit/fast recovery
                     roundNum++;
                     System.out.println(" Triple duplicate ACKs — Fast Retransmit triggered.");
-                    ssthresh = Math.max(cwnd / 2, 1);
+                    ssthresh = Math.max(cwnd / 2, 2);
                     cwnd = ssthresh + 3; // Fast recovery: ssthresh + 3 (for the 3 dup ACKs)
                     inFastRecovery = true;
                     System.out.println("Updated ssthresh: " + ssthresh + ", cwnd set to: " + cwnd + " (Fast Recovery)");
@@ -133,7 +133,7 @@ public class Reno {
         System.out.println("Timeout occurred — treating as congestion signal.");
         roundNum++;
         
-        ssthresh = Math.max(cwnd / 2, 1);
+        ssthresh = Math.max(cwnd / 2, 2);
         cwnd = 1;  // Start over with slow start
         inFastRecovery = false;
         duplicateAckCount = 0;

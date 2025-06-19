@@ -5,8 +5,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class ServerSide {
     private static final int PORT = 3002;
-    private static final int WINDOW_SIZE = 100;
-    private static final double PACKET_LOSS_PROBABILITY = 0.01;
+    private static final int WINDOW_SIZE = 200;
+    private static final double PACKET_LOSS_PROBABILITY = 0.2;
     private static final double TRIPLE_DUP_ACK_PROBABILITY = 0.2;
 
     public static void main(String[] args) {
@@ -238,7 +238,7 @@ public class ServerSide {
                     }
 
                     packetsReceived++;
-                    System.out.println("📥 [" + packetsReceived + "] Received packet - Seq: " + sequenceNumber + 
+                    System.out.println("[" + packetsReceived + "] Received packet - Seq: " + sequenceNumber + 
                                      ", Data: " + dataLength + " bytes, Expected: " + expectedSeq);
 
                     // Simulate packet loss only on first transmission
@@ -369,7 +369,7 @@ public class ServerSide {
         }
 
         private void cleanup() {
-            System.out.println("🧹 Cleaning up client handler...");
+            System.out.println("Cleaning up client handler...");
             
             try {
                 if (output != null) {
