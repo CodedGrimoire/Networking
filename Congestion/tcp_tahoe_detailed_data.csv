@@ -2,26 +2,26 @@ Round,CWND,SSThresh,Phase,Event
 1,2.0,8.0,Slow Start,ACK Received
 2,4.0,8.0,Slow Start,ACK Received
 3,8.0,8.0,Slow Start,ACK Received
-4,9.0,8.0,Congestion Avoidance,ACK Received
-5,1.0,4.5,Slow Start,Triple Dup ACK
-6,2.0,4.5,Slow Start,ACK Received
-7,1.0,2.0,Slow Start,Triple Dup ACK
-8,2.0,2.0,Slow Start,ACK Received
-9,3.0,2.0,Congestion Avoidance,ACK Received
-10,4.0,2.0,Congestion Avoidance,ACK Received
-11,5.0,2.0,Congestion Avoidance,ACK Received
-12,6.0,2.0,Congestion Avoidance,ACK Received
-13,7.0,2.0,Congestion Avoidance,ACK Received
-14,8.0,2.0,Congestion Avoidance,ACK Received
-15,9.0,2.0,Congestion Avoidance,ACK Received
-16,10.0,2.0,Congestion Avoidance,ACK Received
-17,11.0,2.0,Congestion Avoidance,ACK Received
-18,12.0,2.0,Congestion Avoidance,ACK Received
-19,13.0,2.0,Congestion Avoidance,ACK Received
-20,14.0,2.0,Congestion Avoidance,ACK Received
-21,15.0,2.0,Congestion Avoidance,ACK Received
-22,1.0,7.5,Slow Start,Triple Dup ACK
-23,2.0,7.5,Slow Start,ACK Received
+4,1.0,4.0,Slow Start,Triple Dup ACK
+5,2.0,4.0,Slow Start,ACK Received
+6,1.0,2.0,Slow Start,Triple Dup ACK
+7,2.0,2.0,Slow Start,ACK Received
+8,1.0,2.0,Slow Start,Triple Dup ACK
+9,2.0,2.0,Slow Start,ACK Received
+10,1.0,2.0,Slow Start,Triple Dup ACK
+11,2.0,2.0,Slow Start,ACK Received
+12,1.0,2.0,Slow Start,Triple Dup ACK
+13,2.0,2.0,Slow Start,ACK Received
+14,1.0,2.0,Slow Start,Triple Dup ACK
+15,2.0,2.0,Slow Start,ACK Received
+16,1.0,2.0,Slow Start,Triple Dup ACK
+17,2.0,2.0,Slow Start,ACK Received
+18,1.0,2.0,Slow Start,Triple Dup ACK
+19,2.0,2.0,Slow Start,ACK Received
+20,1.0,2.0,Slow Start,Triple Dup ACK
+21,2.0,2.0,Slow Start,ACK Received
+22,1.0,2.0,Slow Start,Triple Dup ACK
+23,2.0,2.0,Slow Start,ACK Received
 24,1.0,2.0,Slow Start,Triple Dup ACK
 25,2.0,2.0,Slow Start,ACK Received
 26,1.0,2.0,Slow Start,Triple Dup ACK
@@ -44,8 +44,8 @@ Round,CWND,SSThresh,Phase,Event
 43,2.0,2.0,Slow Start,ACK Received
 44,1.0,2.0,Slow Start,Triple Dup ACK
 45,2.0,2.0,Slow Start,ACK Received
-46,3.0,2.0,Congestion Avoidance,ACK Received
-47,4.0,2.0,Congestion Avoidance,ACK Received
+46,1.0,2.0,Slow Start,Triple Dup ACK
+47,2.0,2.0,Slow Start,ACK Received
 48,1.0,2.0,Slow Start,Triple Dup ACK
 49,2.0,2.0,Slow Start,ACK Received
 50,1.0,2.0,Slow Start,Triple Dup ACK
@@ -54,3 +54,91 @@ Round,CWND,SSThresh,Phase,Event
 53,2.0,2.0,Slow Start,ACK Received
 54,1.0,2.0,Slow Start,Triple Dup ACK
 55,2.0,2.0,Slow Start,ACK Received
+56,1.0,2.0,Slow Start,Triple Dup ACK
+57,2.0,2.0,Slow Start,ACK Received
+58,1.0,2.0,Slow Start,Triple Dup ACK
+59,2.0,2.0,Slow Start,ACK Received
+60,1.0,2.0,Slow Start,Triple Dup ACK
+61,2.0,2.0,Slow Start,ACK Received
+62,1.0,2.0,Slow Start,Triple Dup ACK
+63,2.0,2.0,Slow Start,ACK Received
+64,1.0,2.0,Slow Start,Triple Dup ACK
+65,2.0,2.0,Slow Start,ACK Received
+66,1.0,2.0,Slow Start,Triple Dup ACK
+67,2.0,2.0,Slow Start,ACK Received
+68,1.0,2.0,Slow Start,Triple Dup ACK
+69,2.0,2.0,Slow Start,ACK Received
+70,1.0,2.0,Slow Start,Triple Dup ACK
+71,2.0,2.0,Slow Start,ACK Received
+72,1.0,2.0,Slow Start,Triple Dup ACK
+73,2.0,2.0,Slow Start,ACK Received
+74,1.0,2.0,Slow Start,Triple Dup ACK
+75,2.0,2.0,Slow Start,ACK Received
+76,1.0,2.0,Slow Start,Triple Dup ACK
+77,2.0,2.0,Slow Start,ACK Received
+78,1.0,2.0,Slow Start,Triple Dup ACK
+79,2.0,2.0,Slow Start,ACK Received
+80,1.0,2.0,Slow Start,Triple Dup ACK
+81,2.0,2.0,Slow Start,ACK Received
+82,1.0,2.0,Slow Start,Triple Dup ACK
+83,2.0,2.0,Slow Start,ACK Received
+84,1.0,2.0,Slow Start,Triple Dup ACK
+85,2.0,2.0,Slow Start,ACK Received
+86,1.0,2.0,Slow Start,Triple Dup ACK
+87,2.0,2.0,Slow Start,ACK Received
+88,1.0,2.0,Slow Start,Triple Dup ACK
+89,2.0,2.0,Slow Start,ACK Received
+90,1.0,2.0,Slow Start,Triple Dup ACK
+91,2.0,2.0,Slow Start,ACK Received
+92,1.0,2.0,Slow Start,Triple Dup ACK
+93,2.0,2.0,Slow Start,ACK Received
+94,1.0,2.0,Slow Start,Triple Dup ACK
+95,2.0,2.0,Slow Start,ACK Received
+96,1.0,2.0,Slow Start,Triple Dup ACK
+97,2.0,2.0,Slow Start,ACK Received
+98,1.0,2.0,Slow Start,Triple Dup ACK
+99,2.0,2.0,Slow Start,ACK Received
+100,1.0,2.0,Slow Start,Triple Dup ACK
+101,2.0,2.0,Slow Start,ACK Received
+102,1.0,2.0,Slow Start,Triple Dup ACK
+103,2.0,2.0,Slow Start,ACK Received
+104,1.0,2.0,Slow Start,Triple Dup ACK
+105,2.0,2.0,Slow Start,ACK Received
+106,1.0,2.0,Slow Start,Triple Dup ACK
+107,2.0,2.0,Slow Start,ACK Received
+108,1.0,2.0,Slow Start,Triple Dup ACK
+109,2.0,2.0,Slow Start,ACK Received
+110,1.0,2.0,Slow Start,Triple Dup ACK
+111,2.0,2.0,Slow Start,ACK Received
+112,1.0,2.0,Slow Start,Triple Dup ACK
+113,2.0,2.0,Slow Start,ACK Received
+114,1.0,2.0,Slow Start,Triple Dup ACK
+115,2.0,2.0,Slow Start,ACK Received
+116,1.0,2.0,Slow Start,Triple Dup ACK
+117,2.0,2.0,Slow Start,ACK Received
+118,1.0,2.0,Slow Start,Triple Dup ACK
+119,2.0,2.0,Slow Start,ACK Received
+120,1.0,2.0,Slow Start,Triple Dup ACK
+121,2.0,2.0,Slow Start,ACK Received
+122,1.0,2.0,Slow Start,Triple Dup ACK
+123,2.0,2.0,Slow Start,ACK Received
+124,1.0,2.0,Slow Start,Triple Dup ACK
+125,2.0,2.0,Slow Start,ACK Received
+126,1.0,2.0,Slow Start,Triple Dup ACK
+127,2.0,2.0,Slow Start,ACK Received
+128,1.0,2.0,Slow Start,Triple Dup ACK
+129,2.0,2.0,Slow Start,ACK Received
+130,1.0,2.0,Slow Start,Triple Dup ACK
+131,2.0,2.0,Slow Start,ACK Received
+132,1.0,2.0,Slow Start,Triple Dup ACK
+133,2.0,2.0,Slow Start,ACK Received
+134,1.0,2.0,Slow Start,Triple Dup ACK
+135,2.0,2.0,Slow Start,ACK Received
+136,1.0,2.0,Slow Start,Triple Dup ACK
+137,2.0,2.0,Slow Start,ACK Received
+138,1.0,2.0,Slow Start,Triple Dup ACK
+139,2.0,2.0,Slow Start,ACK Received
+140,1.0,2.0,Slow Start,Triple Dup ACK
+141,2.0,2.0,Slow Start,ACK Received
+142,1.0,2.0,Slow Start,Triple Dup ACK
+143,2.0,2.0,Slow Start,ACK Received
