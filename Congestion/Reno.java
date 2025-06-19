@@ -10,7 +10,7 @@ public class Reno {
     private boolean inFastRecovery;
     private String csvFilename; // Auto-save filename
     
-    // History tracking for CSV export
+    
     private List<Integer> rounds;
     private List<Integer> cwndValues;
     private List<Integer> ssthreshValues;
@@ -20,7 +20,7 @@ public class Reno {
     private int roundNum;
 
     public Reno(int initialSsthresh) {
-        this(initialSsthresh, "tcp_reno_simulation.csv"); // Default filename
+        this(initialSsthresh, "tcp_reno_simulation.csv"); 
     }
     
     public Reno(int initialSsthresh, String csvFilename) {
@@ -41,7 +41,7 @@ public class Reno {
         this.events = new ArrayList<>();
         this.fastRecoveryStatus = new ArrayList<>();
         
-        // Create initial CSV file with headers
+        
         initializeCSVFile();
     }
 
@@ -152,7 +152,7 @@ public class Reno {
         this.inFastRecovery = false;
         this.roundNum = 0;
         
-        // Clear history
+      
         rounds.clear();
         cwndValues.clear();
         ssthreshValues.clear();
@@ -162,7 +162,7 @@ public class Reno {
         
         System.out.println("TCP Reno reset: cwnd=1, ssthresh=" + ssthresh);
         
-        // Reinitialize CSV file
+       
         initializeCSVFile();
     }
     
@@ -228,8 +228,8 @@ public class Reno {
                 phases.get(i),
                 events.get(i),
                 fastRecoveryStatus.get(i),
-                // Note: dupACKs at time of recording might not be current dupACKs
-                0 // placeholder for dupACKs since it's dynamic
+               
+                duplicateAckCount  // Use the last recorded duplicate ACK count
             ));
         }
         

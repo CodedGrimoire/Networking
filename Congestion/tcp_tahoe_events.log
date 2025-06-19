@@ -1,8 +1,20 @@
 TCP Event Log - TCP TAHOE
 ============================================================
-Round 5: TIMEOUT seq 4, CWND=1
-Round 6: TIMEOUT seq 5, CWND=1
-Round 20: TIMEOUT seq 19, CWND=1
+Round 5: TRIPLE DUP ACK seq 4, CWND=1
+Round 6: TRIPLE DUP ACK seq 5, CWND=1
+Round 20: TRIPLE DUP ACK seq 19, CWND=1
+Round 21: TRIPLE DUP ACK seq 20, CWND=1
+Round 22: TRIPLE DUP ACK seq 21, CWND=1
+Round 23: TRIPLE DUP ACK seq 22, CWND=1
+Round 24: TRIPLE DUP ACK seq 23, CWND=1
+Round 25: TRIPLE DUP ACK seq 24, CWND=1
+Round 26: TRIPLE DUP ACK seq 25, CWND=1
 Round 27: TRIPLE DUP ACK seq 26, CWND=1
+Round 28: TRIPLE DUP ACK seq 27, CWND=1
+Round 29: TRIPLE DUP ACK seq 28, CWND=1
+Round 30: TRIPLE DUP ACK seq 29, CWND=1
+Round 31: TRIPLE DUP ACK seq 30, CWND=1
+Round 34: TRIPLE DUP ACK seq 33, CWND=1
+Round 35: TRIPLE DUP ACK seq 34, CWND=1
 Round 36: TRIPLE DUP ACK seq 35, CWND=1
 Round 37: TRIPLE DUP ACK seq 36, CWND=1

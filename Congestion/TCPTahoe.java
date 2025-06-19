@@ -66,7 +66,7 @@ public class TCPTahoe {
                 // Slow Start: Exponential growth (double every RTT)
                 cwnd *= 2.0;
                 phase = "Slow Start";
-                System.out.println("📈 Slow Start: cwnd -> " + getCwnd());
+                System.out.println("Slow Start: cwnd -> " + getCwnd());
             } else {
                 // Congestion Avoidance: Linear growth (add 1 every RTT)
                 cwnd += 1.0;
@@ -82,17 +82,14 @@ public class TCPTahoe {
         }
     }
 
-    /**
-     * Handle timeout - TCP Tahoe response to packet loss
-     */
+    
     public void onTimeout() {
         System.out.println(" Timeout occurred — TCP Tahoe congestion response.");
         roundNum++;
         
-        // TCP Tahoe packet loss handling:
-        // 1. Set ssthresh to half of current CWND (minimum 2)
+      
         ssthresh = Math.max(cwnd / 2.0, 2.0);
-        // 2. Reset CWND to 1 (always, regardless of loss type)
+       
         cwnd = 1.0;
         
         System.out.println("Updated ssthresh: " + getSsthresh() + ", cwnd reset to 1 (Slow Start)");
@@ -101,9 +98,7 @@ public class TCPTahoe {
         recordHistory("Slow Start", "Packet Loss");
     }
 
-    /**
-     * Handle triple duplicate ACKs - TCP Tahoe treats this as packet loss
-     */
+   
     public void onTripleDupAck() {
         System.out.println(" Triple duplicate ACKs — TCP Tahoe treats as packet loss.");
         roundNum++;
@@ -118,9 +113,7 @@ public class TCPTahoe {
         recordHistory("Slow Start", "Triple Dup ACK");
     }
 
-    /**
-     * Reset the Tahoe state for a new connection
-     */
+    
     public void reset() {
         this.cwnd = 1.0;
         this.ssthresh = initialSsthresh;
@@ -140,25 +133,19 @@ public class TCPTahoe {
         initializeCSVFile();
     }
     
-    /**
-     * Get current state information for debugging
-     */
+    
     public String getCurrentState() {
         String phase = (cwnd < ssthresh) ? "Slow Start" : "Congestion Avoidance";
         return String.format("CWND=%d, SSThresh=%d, Phase=%s", 
                            getCwnd(), getSsthresh(), phase);
     }
     
-    /**
-     * Get current phase based on CWND and ssthresh
-     */
+   
     public String getCurrentPhase() {
         return (cwnd < ssthresh) ? "Slow Start" : "Congestion Avoidance";
     }
     
-    /**
-     * Initialize CSV file with headers
-     */
+
     private void initializeCSVFile() {
         try (PrintWriter writer = new PrintWriter(new FileWriter(csvFilename))) {
             writer.println("Round,CWND,SSThresh,Phase,Event");
@@ -168,9 +155,7 @@ public class TCPTahoe {
         }
     }
     
-    /**
-     * Record history and auto-save to CSV at each round
-     */
+   
     private void recordHistory(String phase, String event) {
         // Add to memory lists
         rounds.add(roundNum);
@@ -193,9 +178,7 @@ public class TCPTahoe {
         }
     }
     
-    /**
-     * Export simulation data to CSV format (for manual export)
-     */
+   
     public String exportToCSV() {
         StringBuilder csv = new StringBuilder();
         csv.append("Round,CWND,SSThresh,Phase,Event\n");
@@ -212,9 +195,7 @@ public class TCPTahoe {
         return csv.toString();
     }
     
-    /**
-     * Write complete simulation data to a different CSV file (manual export)
-     */
+   
     public void writeToCSV(String filename) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
             writer.print(exportToCSV());
@@ -224,9 +205,7 @@ public class TCPTahoe {
         }
     }
     
-    /**
-     * Get statistics about the current session
-     */
+    
     public void printStatistics() {
         if (rounds.isEmpty()) {
             System.out.println("No data to analyze yet.");

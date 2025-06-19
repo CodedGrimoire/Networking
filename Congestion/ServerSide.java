@@ -5,9 +5,9 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class ServerSide {
     private static final int PORT = 3002;
-    private static final int WINDOW_SIZE = 200;
-    private static final double PACKET_LOSS_PROBABILITY = 0.1;
-    private static final double TRIPLE_DUP_ACK_PROBABILITY = 0.1;
+    private static final int WINDOW_SIZE = 100;
+    private static final double PACKET_LOSS_PROBABILITY = 0.01;
+    private static final double TRIPLE_DUP_ACK_PROBABILITY = 0.2;
 
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
@@ -54,7 +54,7 @@ public class ServerSide {
                         String fileName = input.readUTF();
 
                         if ("__EXIT__".equals(fileName)) {
-                            System.out.println("📤 Client requested disconnection.");
+                            System.out.println("Client requested disconnection.");
                             sendAck(-1); // Acknowledge the exit request
                             break;
                         }
@@ -93,11 +93,11 @@ public class ServerSide {
                         // Continue waiting for more data
                         
                     } catch (EOFException e) {
-                        System.out.println("📡 Client disconnected (EOF): " + e.getMessage());
+                        System.out.println(" Client disconnected (EOF): " + e.getMessage());
                         break;
                         
                     } catch (SocketException e) {
-                        System.out.println("🔌 Socket error: " + e.getMessage());
+                        System.out.println("Socket error: " + e.getMessage());
                         if (e.getMessage().contains("Connection reset") || 
                             e.getMessage().contains("Socket closed") ||
                             e.getMessage().contains("Broken pipe")) {
@@ -107,7 +107,7 @@ public class ServerSide {
                         // For other socket errors, try to continue
                         
                     } catch (IOException e) {
-                        System.out.println("⚠️ IO error in main client loop: " + e.getMessage());
+                        System.out.println("IO error in main client loop: " + e.getMessage());
                         if (!isConnectionActive()) {
                             break;
                         }
@@ -205,7 +205,7 @@ public class ServerSide {
                 int packetsReceived = 0;
                 long transferStartTime = System.currentTimeMillis();
 
-                System.out.println("📁 Created file: " + actualFileName);
+                System.out.println("Created file: " + actualFileName);
 
                 while (isConnectionActive()) {
                     // Read sequence number
@@ -223,7 +223,7 @@ public class ServerSide {
                     int dataLength = input.readInt();
                     
                     if (dataLength < 0 || dataLength > WINDOW_SIZE) {
-                        System.out.println("❌ Invalid data length: " + dataLength);
+                        System.out.println("Invalid data length: " + dataLength);
                         continue;
                     }
 
@@ -286,8 +286,7 @@ public class ServerSide {
                             }
                         }
                         
-                        // After sending fake duplicate ACKs, process the packet normally
-                        // (This simulates the packet finally getting through after triggering fast retransmit)
+                        
                     }
 
                     // Process the packet normally
@@ -322,7 +321,7 @@ public class ServerSide {
                             System.out.println("Failed to send duplicate ACK for out-of-order packet");
                             break;
                         }
-                        System.out.println("📦 Out-of-order packet (seq: " + sequenceNumber + 
+                        System.out.println("Out-of-order packet (seq: " + sequenceNumber + 
                                          ", expected: " + expectedSeq + "). Sent duplicate ACK for seq: " + highestInOrderSeq);
                         
                     } else {
@@ -345,7 +344,7 @@ public class ServerSide {
                 System.out.println("File saved as: " + actualFileName);
                 System.out.println("Total bytes received: " + totalBytesReceived);
                 System.out.println("Total packets received: " + packetsReceived);
-                System.out.println("⏱Transfer duration: " + transferDuration + " ms");
+                System.out.println("Transfer duration: " + transferDuration + " ms");
                 System.out.println("Average throughput: " + (totalBytesReceived * 1000.0 / transferDuration) + " bytes/sec");
                 System.out.println("Buffered packets remaining: " + bufferedPackets.size());
                 System.out.println("=".repeat(50));

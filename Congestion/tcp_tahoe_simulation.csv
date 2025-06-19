@@ -3,9 +3,9 @@ Round,CWND,SSThresh,Phase,Event
 2,4.0,8.0,Slow Start,ACK Received
 3,8.0,8.0,Slow Start,ACK Received
 4,9.0,8.0,Congestion Avoidance,ACK Received
-5,1.0,4.5,Slow Start,Packet Loss
+5,1.0,4.5,Slow Start,Triple Dup ACK
 6,2.0,4.5,Slow Start,ACK Received
-7,1.0,2.0,Slow Start,Packet Loss
+7,1.0,2.0,Slow Start,Triple Dup ACK
 8,2.0,2.0,Slow Start,ACK Received
 9,3.0,2.0,Congestion Avoidance,ACK Received
 10,4.0,2.0,Congestion Avoidance,ACK Received
@@ -20,25 +20,37 @@ Round,CWND,SSThresh,Phase,Event
 19,13.0,2.0,Congestion Avoidance,ACK Received
 20,14.0,2.0,Congestion Avoidance,ACK Received
 21,15.0,2.0,Congestion Avoidance,ACK Received
-22,1.0,7.5,Slow Start,Packet Loss
+22,1.0,7.5,Slow Start,Triple Dup ACK
 23,2.0,7.5,Slow Start,ACK Received
-24,4.0,7.5,Slow Start,ACK Received
-25,8.0,7.5,Slow Start,ACK Received
-26,9.0,7.5,Congestion Avoidance,ACK Received
-27,10.0,7.5,Congestion Avoidance,ACK Received
-28,11.0,7.5,Congestion Avoidance,ACK Received
-29,12.0,7.5,Congestion Avoidance,ACK Received
-30,1.0,6.0,Slow Start,Triple Dup ACK
-31,2.0,6.0,Slow Start,ACK Received
-32,4.0,6.0,Slow Start,ACK Received
-33,8.0,6.0,Slow Start,ACK Received
-34,9.0,6.0,Congestion Avoidance,ACK Received
-35,10.0,6.0,Congestion Avoidance,ACK Received
-36,11.0,6.0,Congestion Avoidance,ACK Received
-37,12.0,6.0,Congestion Avoidance,ACK Received
-38,13.0,6.0,Congestion Avoidance,ACK Received
-39,14.0,6.0,Congestion Avoidance,ACK Received
-40,1.0,7.0,Slow Start,Triple Dup ACK
-41,2.0,7.0,Slow Start,ACK Received
+24,1.0,2.0,Slow Start,Triple Dup ACK
+25,2.0,2.0,Slow Start,ACK Received
+26,1.0,2.0,Slow Start,Triple Dup ACK
+27,2.0,2.0,Slow Start,ACK Received
+28,1.0,2.0,Slow Start,Triple Dup ACK
+29,2.0,2.0,Slow Start,ACK Received
+30,1.0,2.0,Slow Start,Triple Dup ACK
+31,2.0,2.0,Slow Start,ACK Received
+32,1.0,2.0,Slow Start,Triple Dup ACK
+33,2.0,2.0,Slow Start,ACK Received
+34,1.0,2.0,Slow Start,Triple Dup ACK
+35,2.0,2.0,Slow Start,ACK Received
+36,1.0,2.0,Slow Start,Triple Dup ACK
+37,2.0,2.0,Slow Start,ACK Received
+38,1.0,2.0,Slow Start,Triple Dup ACK
+39,2.0,2.0,Slow Start,ACK Received
+40,1.0,2.0,Slow Start,Triple Dup ACK
+41,2.0,2.0,Slow Start,ACK Received
 42,1.0,2.0,Slow Start,Triple Dup ACK
 43,2.0,2.0,Slow Start,ACK Received
+44,1.0,2.0,Slow Start,Triple Dup ACK
+45,2.0,2.0,Slow Start,ACK Received
+46,3.0,2.0,Congestion Avoidance,ACK Received
+47,4.0,2.0,Congestion Avoidance,ACK Received
+48,1.0,2.0,Slow Start,Triple Dup ACK
+49,2.0,2.0,Slow Start,ACK Received
+50,1.0,2.0,Slow Start,Triple Dup ACK
+51,2.0,2.0,Slow Start,ACK Received
+52,1.0,2.0,Slow Start,Triple Dup ACK
+53,2.0,2.0,Slow Start,ACK Received
+54,1.0,2.0,Slow Start,Triple Dup ACK
+55,2.0,2.0,Slow Start,ACK Received
