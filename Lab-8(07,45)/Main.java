@@ -5,9 +5,9 @@ public class Main {
             network.readTopology("topology.txt");
             network.startSimulation();
 
-            // Let simulation run for 2 minutes then stop
-            Thread.sleep(120_000);
-            network.printLog();
+            while (!network.isStopped()) {
+                Thread.sleep(1000);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();

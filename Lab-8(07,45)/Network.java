@@ -1,16 +1,20 @@
-// File: Network.java
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
 
 public class Network {
     public Map<String, Router> routers = new HashMap<>();
-    public String topologyFile;
     public int messageCount = 0;
     public List<String> log = new ArrayList<>();
 
+    private int convergenceCounter = 0;
+    private int lastMessageCount = 0;
+    private int stableRounds = 0;
+    private final int STABLE_THRESHOLD = 3;
+    private boolean simulationStopped = false;
+    private ScheduledExecutorService scheduler;
+
     public void readTopology(String filename) throws IOException {
-        this.topologyFile = filename;
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         String line;
         while ((line = reader.readLine()) != null) {
@@ -35,12 +39,15 @@ public class Network {
     }
 
     public void startSimulation() {
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+        scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(this::sendDistanceVectors, 0, 5, TimeUnit.SECONDS);
-        scheduler.scheduleAtFixedRate(this::updateCostRandomly, 30, 30, TimeUnit.SECONDS);
     }
 
     public void sendDistanceVectors() {
+        if (simulationStopped) return;
+
+        Set<String> updatedThisRound = new HashSet<>();
+
         for (Router sender : routers.values()) {
             for (String neighborId : sender.neighbors.keySet()) {
                 Router neighbor = routers.get(neighborId);
@@ -48,30 +55,38 @@ public class Network {
                 boolean changed = neighbor.receiveVector(sender.id, vector);
                 messageCount++;
                 logChange(sender.id + " sent vector to " + neighborId);
+
                 if (changed) {
-                    neighbor.printRoutingTable((int)(System.currentTimeMillis() / 1000));
+                    updatedThisRound.add(neighbor.id);
                     logChange("Routing table updated at " + neighbor.id);
                 }
             }
         }
-    }
 
-    public void updateCostRandomly() {
-        List<String> keys = new ArrayList<>(routers.keySet());
-        Random rand = new Random();
-        String r1 = keys.get(rand.nextInt(keys.size()));
-        if (routers.get(r1).neighbors.isEmpty()) return;
+        int now = (int) (System.currentTimeMillis() / 1000);
+        for (String routerId : updatedThisRound) {
+            routers.get(routerId).printRoutingTable(now);
+        }
 
-        List<String> r1Neighbors = new ArrayList<>(routers.get(r1).neighbors.keySet());
-        String r2 = r1Neighbors.get(rand.nextInt(r1Neighbors.size()));
+        if (updatedThisRound.isEmpty()) {
+            stableRounds++;
+            logChange("Stable round " + stableRounds);
+        } else {
+            stableRounds = 0;
+        }
 
-        int newCost = 1 + rand.nextInt(10);
-        routers.get(r1).neighbors.put(r2, newCost);
-        routers.get(r2).neighbors.put(r1, newCost);
+        if (stableRounds >= STABLE_THRESHOLD && !simulationStopped) {
+            logChange("✅ Network has converged. Stopping simulation.");
+            simulationStopped = true;
+            scheduler.shutdown();
+            printLog();
+        }
 
-        String msg = String.format("Cost changed: %s <-> %s = %d", r1, r2, newCost);
-        System.out.println("[Time = " + (System.currentTimeMillis() / 1000) + "s] " + msg);
-        logChange(msg);
+        if (updatedThisRound.isEmpty() && messageCount != lastMessageCount) {
+            convergenceCounter++;
+            lastMessageCount = messageCount;
+            logChange("Convergence iteration " + convergenceCounter);
+        }
     }
 
     public void logChange(String msg) {
@@ -83,5 +98,17 @@ public class Network {
         for (String entry : log) {
             System.out.println(entry);
         }
+
+        System.out.println("Total messages exchanged: " + messageCount);
+        System.out.println("Total convergence iterations after last cost change: " + convergenceCounter);
+
+        System.out.println("\nAll-Pair Shortest Paths:");
+        for (Router router : routers.values()) {
+            router.printFinalPaths();
+        }
+    }
+
+    public boolean isStopped() {
+        return simulationStopped;
     }
 }

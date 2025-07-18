@@ -1,5 +1,3 @@
-import java.util.Map;
-
 public class BellmanFord {
     public static int computeCost(int costToNeighbor, int advertisedCost) {
         if (advertisedCost == Integer.MAX_VALUE || costToNeighbor == Integer.MAX_VALUE) {

@@ -1,5 +1,6 @@
 import java.util.*;
 import java.io.*;
+
 class RoutingEntry {
     public int cost;
     public String nextHop;
@@ -46,10 +47,14 @@ public class Router {
             int newCost = BellmanFord.computeCost(costToNeighbor, advertisedCost);
 
             RoutingEntry current = routingTable.get(destination);
+            if (current == null) continue;
+
             if (BellmanFord.shouldUpdate(newCost, current.cost, current.nextHop, fromNeighbor)) {
-                routingTable.put(destination, new RoutingEntry(newCost, fromNeighbor));
-                distanceVector.put(destination, newCost);
-                updated = true;
+                if (newCost != current.cost || !Objects.equals(current.nextHop, fromNeighbor)) {
+                    routingTable.put(destination, new RoutingEntry(newCost, fromNeighbor));
+                    distanceVector.put(destination, newCost);
+                    updated = true;
+                }
             }
         }
         return updated;
@@ -58,7 +63,8 @@ public class Router {
     public Map<String, Integer> getDistanceVectorFor(String neighbor) {
         Map<String, Integer> poisoned = new HashMap<>();
         for (String dest : distanceVector.keySet()) {
-            if (routingTable.get(dest).nextHop != null && routingTable.get(dest).nextHop.equals(neighbor)) {
+            RoutingEntry entry = routingTable.get(dest);
+            if (entry.nextHop != null && entry.nextHop.equals(neighbor)) {
                 poisoned.put(dest, Integer.MAX_VALUE);
             } else {
                 poisoned.put(dest, distanceVector.get(dest));
@@ -80,6 +86,17 @@ public class Router {
         sb.append("\n");
         System.out.print(sb.toString());
         logToFile(sb.toString());
+    }
+
+    public void printFinalPaths() {
+        System.out.println("Final shortest paths from Router " + id + ":");
+        for (String dest : routingTable.keySet()) {
+            RoutingEntry entry = routingTable.get(dest);
+            String costStr = (entry.cost == Integer.MAX_VALUE) ? "∞" : Integer.toString(entry.cost);
+            String nextHopStr = (entry.nextHop == null) ? "-" : entry.nextHop;
+            System.out.println("To " + dest + " via " + nextHopStr + " cost: " + costStr);
+        }
+        System.out.println();
     }
 
     private void logToFile(String logText) {
